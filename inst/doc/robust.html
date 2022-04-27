@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Robust testing</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Robust testing</h1>
+
+
+
+<p>All tests are not created equal. Some tests are all encompassing; others are more focused. Each approach has its own advantages and disadvantages.</p>
+<p>Goals to have when writing tests are to</p>
+<ul>
+<li>Confirm the expected behavior</li>
+<li>Assert as little unnecessary information</li>
+<li>Write clear, direct tests</li>
+</ul>
+<div id="expectations" class="section level1">
+<h1>Expectations</h1>
+<p>Unit tests provide a sense of security by making assertions on expected behavior. If all unit tests pass, then we can declare the object/method to be valid. 🦆</p>
+<p>Let’s look at a quick example of:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>add_abs &lt;-<span class="st"> </span><span class="cf">function</span>(x, y) {</span>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="kw">abs</span>(x <span class="op">+</span><span class="st"> </span>y)</span>
+<span id="cb1-3"><a href="#cb1-3"></a>}</span></code></pre></div>
+<div id="confirm-the-expected-behavior" class="section level4">
+<h4>Confirm the expected behavior</h4>
+<p>If we only test positive numbers, then we can guess the answer using <code>+</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>x &lt;-<span class="st"> </span><span class="dv">50</span>; y &lt;-<span class="st"> </span><span class="dv">42</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>testthat<span class="op">::</span><span class="kw">expect_equal</span>(<span class="kw">add_abs</span>(x, y), x <span class="op">+</span><span class="st"> </span>y)</span></code></pre></div>
+<p>However, if a negative number is used, it will have different behavior than <code>+</code>. So we must test for both situations.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>x &lt;-<span class="st"> </span><span class="dv">50</span>; y &lt;-<span class="st"> </span><span class="dv">-42</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>testthat<span class="op">::</span><span class="kw">expect_equal</span>(<span class="kw">add_abs</span>(x, y), x <span class="op">+</span><span class="st"> </span>y)</span></code></pre></div>
+<p>Even better, let’s test all four positive/negative situations:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="cf">for</span> (info <span class="cf">in</span> <span class="kw">list</span>(</span>
+<span id="cb4-2"><a href="#cb4-2"></a>  <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>),</span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb4-4"><a href="#cb4-4"></a>  <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb4-5"><a href="#cb4-5"></a>  <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>)</span>
+<span id="cb4-6"><a href="#cb4-6"></a>)) {</span>
+<span id="cb4-7"><a href="#cb4-7"></a>  testthat<span class="op">::</span><span class="kw">expect_equal</span>(</span>
+<span id="cb4-8"><a href="#cb4-8"></a>    <span class="kw">add_abs</span>(info<span class="op">$</span>x, info<span class="op">$</span>y),</span>
+<span id="cb4-9"><a href="#cb4-9"></a>    info<span class="op">$</span>expected</span>
+<span id="cb4-10"><a href="#cb4-10"></a>  )</span>
+<span id="cb4-11"><a href="#cb4-11"></a>}</span></code></pre></div>
+<p>This concept can even be expanded to vectors of values. However, this can lead to a lot of code.</p>
+</div>
+<div id="assert-as-little-unnecessary-information" class="section level4">
+<h4>Assert as little unnecessary information</h4>
+<p>Tests should strive to only confirm behavior that we have control over. For example, if the we are only interested in the behavior of <code>abs</code>, then we should not be concerned with the behavior of <code>+</code>.</p>
+<p>We can assume that <code>+</code> is working properly and adds two numbers together. We do not necessarily need to perform a multitude of nonsense input testing on <code>+</code>, but it may make sense to see how <code>abs()</code> handles a few non-number input values.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>testthat<span class="op">::</span><span class="kw">expect_equal</span>(<span class="kw">add_abs</span>(<span class="dv">1</span>, <span class="ot">NA</span>), <span class="ot">NA</span>)</span>
+<span id="cb5-2"><a href="#cb5-2"></a>testthat<span class="op">::</span><span class="kw">expect_equal</span>(<span class="kw">add_abs</span>(<span class="dv">1</span>, <span class="ot">NULL</span>), <span class="kw">numeric</span>(<span class="dv">0</span>))</span>
+<span id="cb5-3"><a href="#cb5-3"></a>testthat<span class="op">::</span><span class="kw">expect_error</span>(<span class="kw">add_abs</span>(<span class="dv">1</span>, <span class="st">&quot;string&quot;</span>))</span></code></pre></div>
+<p>These test could also be repeated swapping <code>x</code> and <code>y</code>.</p>
+</div>
+<div id="write-clear-direct-tests" class="section level4">
+<h4>Write clear, direct tests</h4>
+<p>When writing tests, each test can contain many expectations but each expectation should pertain to the test being run.</p>
+<p>For example, the two situations above could be included in the same test block:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># File: tests/testthat/test-add_abs-bad.R</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="kw">test_that</span>(<span class="st">&quot;add_abs() works&quot;</span>, {</span>
+<span id="cb6-4"><a href="#cb6-4"></a>  <span class="cf">for</span> (info <span class="cf">in</span> <span class="kw">list</span>(</span>
+<span id="cb6-5"><a href="#cb6-5"></a>    <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>),</span>
+<span id="cb6-6"><a href="#cb6-6"></a>    <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb6-7"><a href="#cb6-7"></a>    <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb6-8"><a href="#cb6-8"></a>    <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>)</span>
+<span id="cb6-9"><a href="#cb6-9"></a>  )) {</span>
+<span id="cb6-10"><a href="#cb6-10"></a>    <span class="kw">expect_equal</span>(</span>
+<span id="cb6-11"><a href="#cb6-11"></a>      <span class="kw">add_abs</span>(info<span class="op">$</span>x, info<span class="op">$</span>y),</span>
+<span id="cb6-12"><a href="#cb6-12"></a>      info<span class="op">$</span>expected</span>
+<span id="cb6-13"><a href="#cb6-13"></a>    )</span>
+<span id="cb6-14"><a href="#cb6-14"></a>  }</span>
+<span id="cb6-15"><a href="#cb6-15"></a></span>
+<span id="cb6-16"><a href="#cb6-16"></a>  <span class="kw">expect_equal</span>(<span class="kw">add_abs</span>(<span class="dv">1</span>, <span class="ot">NA</span>), <span class="ot">NA</span>)</span>
+<span id="cb6-17"><a href="#cb6-17"></a>  <span class="kw">expect_equal</span>(<span class="kw">add_abs</span>(<span class="dv">1</span>, <span class="ot">NULL</span>), <span class="kw">numeric</span>(<span class="dv">0</span>))</span>
+<span id="cb6-18"><a href="#cb6-18"></a>  <span class="kw">expect_error</span>(<span class="kw">add_abs</span>(<span class="dv">1</span>, <span class="st">&quot;string&quot;</span>))</span>
+<span id="cb6-19"><a href="#cb6-19"></a>})</span></code></pre></div>
+<p>Instead, they should be broken out into two separate tests, each with their own descriptive title.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># File: tests/testthat/test-add_abs-better.R</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="kw">test_that</span>(<span class="st">&quot;add_abs() adds two numbers&quot;</span>, {</span>
+<span id="cb7-4"><a href="#cb7-4"></a>  <span class="cf">for</span> (info <span class="cf">in</span> <span class="kw">list</span>(</span>
+<span id="cb7-5"><a href="#cb7-5"></a>    <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>),</span>
+<span id="cb7-6"><a href="#cb7-6"></a>    <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb7-7"><a href="#cb7-7"></a>    <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb7-8"><a href="#cb7-8"></a>    <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">-8</span>),</span>
+<span id="cb7-9"><a href="#cb7-9"></a>    <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>)</span>
+<span id="cb7-10"><a href="#cb7-10"></a>  )) {</span>
+<span id="cb7-11"><a href="#cb7-11"></a>    <span class="kw">expect_equal</span>(</span>
+<span id="cb7-12"><a href="#cb7-12"></a>      <span class="kw">add_abs</span>(info<span class="op">$</span>x, info<span class="op">$</span>y),</span>
+<span id="cb7-13"><a href="#cb7-13"></a>      info<span class="op">$</span>expected</span>
+<span id="cb7-14"><a href="#cb7-14"></a>    )</span>
+<span id="cb7-15"><a href="#cb7-15"></a>  }</span>
+<span id="cb7-16"><a href="#cb7-16"></a>})</span>
+<span id="cb7-17"><a href="#cb7-17"></a></span>
+<span id="cb7-18"><a href="#cb7-18"></a><span class="kw">test_that</span>(<span class="st">&quot;add_abs() handles non-numeric input&quot;</span>, {</span>
+<span id="cb7-19"><a href="#cb7-19"></a>  <span class="kw">expect_equal</span>(<span class="kw">add_abs</span>(<span class="dv">1</span>, <span class="ot">NA</span>), <span class="ot">NA</span>)</span>
+<span id="cb7-20"><a href="#cb7-20"></a>  <span class="kw">expect_equal</span>(<span class="kw">add_abs</span>(<span class="dv">1</span>, <span class="ot">NULL</span>), <span class="kw">numeric</span>(<span class="dv">0</span>))</span>
+<span id="cb7-21"><a href="#cb7-21"></a>  <span class="kw">expect_error</span>(<span class="kw">add_abs</span>(<span class="dv">1</span>, <span class="st">&quot;string&quot;</span>))</span>
+<span id="cb7-22"><a href="#cb7-22"></a>})</span></code></pre></div>
+<p><code>{testthat}</code> does a great job of displaying output to the user when thing go wrong. When the first test goes wrong, an error will be given like</p>
+<pre><code>── Failure (Line 9): add_abs() adds two numbers ────────────────────────────────
+add_abs(info$x, info$y) (`actual`) not equal to info$expected (`expected`).
+
+  `actual`:  8
+`expected`: -8</code></pre>
+<p>It is great that an error was found, but it is also difficult to determine which assertion failed. Adding labels to the expectation allows you to provide more context about which test failed.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># File: tests/testthat/test-add_abs-label.R</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">test_that</span>(<span class="st">&quot;add_abs() adds two numbers&quot;</span>, {</span>
+<span id="cb9-4"><a href="#cb9-4"></a>  <span class="cf">for</span> (info <span class="cf">in</span> <span class="kw">list</span>(</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>),</span>
+<span id="cb9-6"><a href="#cb9-6"></a>    <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb9-7"><a href="#cb9-7"></a>    <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb9-8"><a href="#cb9-8"></a>    <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">-8</span>), <span class="co"># &lt;- Failing line</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a>    <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>)</span>
+<span id="cb9-10"><a href="#cb9-10"></a>  )) {</span>
+<span id="cb9-11"><a href="#cb9-11"></a>    <span class="kw">expect_equal</span>(</span>
+<span id="cb9-12"><a href="#cb9-12"></a>      <span class="kw">add_abs</span>(info<span class="op">$</span>x, info<span class="op">$</span>y),</span>
+<span id="cb9-13"><a href="#cb9-13"></a>      info<span class="op">$</span>expected,</span>
+<span id="cb9-14"><a href="#cb9-14"></a>      <span class="dt">label =</span> <span class="kw">paste0</span>(<span class="st">&quot;x:&quot;</span>, info<span class="op">$</span>x, <span class="st">&quot;; y:&quot;</span>, info<span class="op">$</span>y),</span>
+<span id="cb9-15"><a href="#cb9-15"></a>      <span class="dt">expected.label =</span> info<span class="op">$</span>expected</span>
+<span id="cb9-16"><a href="#cb9-16"></a>    )</span>
+<span id="cb9-17"><a href="#cb9-17"></a>  }</span>
+<span id="cb9-18"><a href="#cb9-18"></a>})</span>
+<span id="cb9-19"><a href="#cb9-19"></a><span class="co">#&gt; ── Failure (Line 9): add_abs() adds two numbers ────────────────────────────────</span></span>
+<span id="cb9-20"><a href="#cb9-20"></a><span class="co">#&gt; x:50; y:-42 (`actual`) not equal to info$expected (`expected`).</span></span>
+<span id="cb9-21"><a href="#cb9-21"></a><span class="co">#&gt;</span></span>
+<span id="cb9-22"><a href="#cb9-22"></a><span class="co">#&gt;   `actual`:  8</span></span>
+<span id="cb9-23"><a href="#cb9-23"></a><span class="co">#&gt; `expected`: -8</span></span></code></pre></div>
+<p>Another pattern that provides more context and allows for more tests is to move the for-loop around the call to <code>test_that()</code> and give the test a custom name:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># File: tests/testthat/test-add_abs-label.R</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="cf">for</span> (info <span class="cf">in</span> <span class="kw">list</span>(</span>
+<span id="cb10-4"><a href="#cb10-4"></a>  <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>),</span>
+<span id="cb10-5"><a href="#cb10-5"></a>  <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span>  <span class="dv">42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb10-6"><a href="#cb10-6"></a>  <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">8</span>),</span>
+<span id="cb10-7"><a href="#cb10-7"></a>  <span class="kw">list</span>(<span class="dt">x =</span>  <span class="dv">50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">-8</span>), <span class="co"># &lt;- Failing line</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a>  <span class="kw">list</span>(<span class="dt">x =</span> <span class="dv">-50</span>, <span class="dt">y =</span> <span class="dv">-42</span>, <span class="dt">expected =</span>  <span class="dv">92</span>)</span>
+<span id="cb10-9"><a href="#cb10-9"></a>)) {</span>
+<span id="cb10-10"><a href="#cb10-10"></a>  <span class="kw">test_that</span>(<span class="kw">paste0</span>(<span class="st">&quot;add_abs() adds two numbers: [&quot;</span>, info<span class="op">$</span>x, <span class="st">&quot;, &quot;</span>, info<span class="op">$</span>y, <span class="st">&quot;]&quot;</span>), {</span>
+<span id="cb10-11"><a href="#cb10-11"></a>    <span class="kw">expect_equal</span>(</span>
+<span id="cb10-12"><a href="#cb10-12"></a>      <span class="kw">add_abs</span>(info<span class="op">$</span>x, info<span class="op">$</span>y),</span>
+<span id="cb10-13"><a href="#cb10-13"></a>      info<span class="op">$</span>expected</span>
+<span id="cb10-14"><a href="#cb10-14"></a>    )</span>
+<span id="cb10-15"><a href="#cb10-15"></a>  })</span>
+<span id="cb10-16"><a href="#cb10-16"></a>}</span>
+<span id="cb10-17"><a href="#cb10-17"></a><span class="co">#&gt; Test passed 🎊</span></span>
+<span id="cb10-18"><a href="#cb10-18"></a><span class="co">#&gt; Test passed 🎉</span></span>
+<span id="cb10-19"><a href="#cb10-19"></a><span class="co">#&gt; Test passed 🌈</span></span>
+<span id="cb10-20"><a href="#cb10-20"></a><span class="co">#&gt; ── Failure (Line 9): add_abs() adds two numbers: [50, -42] ─────────────────────</span></span>
+<span id="cb10-21"><a href="#cb10-21"></a><span class="co">#&gt; add_abs(info$x, info$y) (`actual`) not equal to info$expected (`expected`).</span></span>
+<span id="cb10-22"><a href="#cb10-22"></a><span class="co">#&gt;</span></span>
+<span id="cb10-23"><a href="#cb10-23"></a><span class="co">#&gt;   `actual`:  8</span></span>
+<span id="cb10-24"><a href="#cb10-24"></a><span class="co">#&gt; `expected`: -8</span></span>
+<span id="cb10-25"><a href="#cb10-25"></a><span class="co">#&gt; Test passed 🥇</span></span></code></pre></div>
+<p>This isolates the test even more and does not let an earlier expectation stop testing a later expectation.</p>
+</div>
+</div>
+<div id="shinytest2-expectations" class="section level1">
+<h1><code>{shinytest2}</code> expectations</h1>
+<p><code>{shinytest2}</code> has a handful of built in expectation methods:</p>
+<ul>
+<li><code>input</code>/<code>output</code> names:
+<ul>
+<li><code>AppDriver$expect_unqiue_names()</code>: Assert all <code>input</code> and <code>output</code> names are unique</li>
+</ul></li>
+<li>Shiny value expectations:
+<ul>
+<li><code>AppDriver$expect_values()</code>: Expect all <code>input</code>, <code>output</code>, and <code>export</code> values are consistent</li>
+<li><code>AppDriver$expect_download()</code>: Expect a downloaded file to downloadable</li>
+</ul></li>
+<li>UI expectations:
+<ul>
+<li><code>AppDriver$expect_text()</code>: Expect the text content for a given <code>selector</code> to be consistent</li>
+<li><code>AppDriver$expect_html()</code>: Expect the HTML content for a given <code>selector</code> to be consistent</li>
+<li><code>AppDriver$expect_js()</code>: Expect the JavaScript return value to be consistent</li>
+</ul></li>
+<li>UI visual expectations:
+<ul>
+<li><code>AppDriver$expect_screenshot()</code>: Expect a screenshot of the UI to be consistent</li>
+</ul></li>
+</ul>
+<div id="inputoutput-names" class="section level2">
+<h2><code>input</code>/<code>output</code> names</h2>
+<p>A method I’d like to quickly gloss over is <code>AppDriver$expect_unique_names()</code>. This method is called (by default) by <code>AppDriver$new(check_names = TRUE)</code> and confirms that no <code>input</code> or <code>output</code> HTML names are duplicated. If duplicate values are found, this results in invalid HTML and possible failure within Shiny.</p>
+<p>A behavior that I use is to add <code>_out</code> to the end of any <code>output</code>, e.g. <code>outputs$text_out</code>.</p>
+<p>If you use any dynamic UI and want to reassert the names are still unique, it is perfectly acceptable to call <code>AppDriver$expect_unique_names()</code> after setting any dynamic UI values.</p>
+</div>
+<div id="shiny-values" class="section level2">
+<h2>Shiny values:</h2>
+<p><code>AppDriver$expect_values()</code> is the preferred method for testing in <code>{shinytest2}</code>. This method tests different <code>input</code>, <code>output</code>, and <code>export</code> values provided by the Shiny application.</p>
+<ul>
+<li><code>input</code> corresponds to the <code>input</code> values provided by the Shiny application.</li>
+<li><code>output</code> corresponds to the <code>output</code> values provided by the Shiny application.</li>
+<li><code>export</code> corresponds to value that have been _export_ed by the Shiny application. These values are exported by <a href="https://shiny.rstudio.com/reference/shiny/latest/exportTestValues.html"><code>shiny::exportTestValues()</code></a> from within your <code>server</code> function.</li>
+</ul>
+<p>When <code>AppDriver$expect_values()</code> is called, each <code>input</code>, <code>output</code>, and <code>export</code> value will be serialized to JSON and saved to a snapshot file (e.g. <code>001.json</code>) for followup expectations.</p>
+<p>In addition to this value snapshot file, a <em>debug</em> screenshot will be saved to the snapshot directory with its file name ending in <code>_.png</code> (e.g. <code>001_.png</code>). This screenshot is useful for knowing what your application looked like when the values where captured. However, differences in the captured screenshot will never cause test failures. It is recommended to add <code>_.new.png</code> to your <code>.gitignore</code> file to ignore any new debug screenshots that have not been accepted.</p>
+<p>For typical app testing, this method should cover most of your testing needs. (Remember, try to only test the content you have control over.)</p>
+<div id="downloads" class="section level3">
+<h3>Downloads</h3>
+<p>When <code>shiny::downloadButton()</code> or <code>shiny::downloadLink()</code> elements are clicked, a file is downloaded. To make an expectation on the downloaded file, you can use <code>AppDriver$expect_download()</code>.</p>
+<p>In addition to the file being saved, a snapshot of the file name being downloaded will be saved if a suggested file name is used.</p>
+</div>
+</div>
+<div id="ui-expectations" class="section level2">
+<h2>UI expectations</h2>
+<p>Two methods are provided as a middle ground between taking a screenshots and testing Shiny app values: <code>AppDriver$expect_text()</code> and <code>AppDriver$expect_html()</code>.</p>
+<p><code>AppDriver$expect_text(selector=)</code> asks the Chrome browser for the current text contents within the selected elements. This method is great to test contents that are not <code>input</code> or <code>output</code> values. <code>AppDriver$expect_text()</code> is not able to retrieve pseudo elements or values such as the text inside <code>&lt;text&gt;</code> or <code>&lt;textarea&gt;</code> input elements.</p>
+<p><code>AppDriver$expect_html(selector=)</code> asks the Chrome browser for the current DOM structures within the selected elements. This method is perfect for app authors who are constructing their own DOM structures and want to verify that they are consistently being produced. Again, <code>AppDriver$expect_html()</code> is not able to retrieve pseudo elements or values such as the text inside <code>&lt;text&gt;</code> or <code>&lt;textarea&gt;</code> input elements.</p>
+<p>Finally, both of these methods wrap around <code>AppDriver$expect_js(script=)</code>. This method executes a <code>script</code> and the return value is saved as a snapshot. <code>AppDriver$expect_text()</code> and <code>AppDriver$expect_html()</code> are wrappers around <code>AppDriver$expect_js()</code>.</p>
+</div>
+<div id="ui-visual-expectations" class="section level2">
+<h2>UI visual expectations</h2>
+<p>Taking a screenshot is the most brittle expectation provided by <code>{shinytest2}</code>. <code>AppDriver$expect_screenshot()</code> should only be used if it is absolutely necessary or if you willing to handle many false-positive failures.</p>
+<p>There are many ways a screenshot expectation can fail that is unrelated to your code including: * the R version changed * the operating system changed (e.g. Windows vs. Linux) * the system font changed * Chrome is not consistent in how it paints some DOM elements * the CSS transitions did not finish in time * a package author (e.g. Shiny, <code>{bslib}</code>, <code>{htmltools}</code>) changed its DOM structure</p>
+<p>App authors who use custom CSS or JavaScript may find this method useful. But it is still strongly recommended to only test the content you have control over to avoid false-positive failures.</p>
+<p>When expecting a screenshot, a <code>AppDriver$new(variant=)</code> must be supplied. The value may be <code>NULL</code>, but it is recommended to use <code>shinytest2::platform_variant()</code>.</p>
+</div>
+</div>
+<div id="suggested-approaches" class="section level1">
+<h1>Suggested approaches</h1>
+<div id="exported-values" class="section level2">
+<h2>Exported values</h2>
+<p>It can not be recommended enough to use <a href="https://shiny.rstudio.com/reference/shiny/latest/exportTestValues.html"><code>shiny::exportTestValues()</code></a> to test your Shiny app’s reactive values.</p>
+<p>If we make the assumption that package authors create consistent render methods, then we can test the values provided to render methods using <code>shiny::exportTestValues()</code>. Let’s look at an example of a Shiny app that displays a plot of the first <code>n</code> rows of data.</p>
+<p>It is recommended to make your render methods contain little logic so that the value being rendered can also be exported.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">library</span>(shiny)</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">library</span>(ggplot2)</span>
+<span id="cb11-3"><a href="#cb11-3"></a>ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(</span>
+<span id="cb11-4"><a href="#cb11-4"></a>  <span class="kw">numericInput</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Number of rows&quot;</span>, <span class="dv">10</span>, <span class="dv">1</span>, <span class="kw">nrow</span>(cars)),</span>
+<span id="cb11-5"><a href="#cb11-5"></a>  <span class="kw">plotOutput</span>(<span class="st">&quot;plot&quot;</span>)</span>
+<span id="cb11-6"><a href="#cb11-6"></a>)</span>
+<span id="cb11-7"><a href="#cb11-7"></a>server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output) {</span>
+<span id="cb11-8"><a href="#cb11-8"></a>  dt &lt;-<span class="st"> </span><span class="kw">reactive</span>({</span>
+<span id="cb11-9"><a href="#cb11-9"></a>    <span class="kw">head</span>(cars, input<span class="op">$</span>n)</span>
+<span id="cb11-10"><a href="#cb11-10"></a>  })</span>
+<span id="cb11-11"><a href="#cb11-11"></a>  plot_obj &lt;-<span class="st"> </span><span class="kw">reactive</span>({</span>
+<span id="cb11-12"><a href="#cb11-12"></a>    <span class="kw">ggplot</span>(<span class="kw">dt</span>(), <span class="kw">aes_string</span>(<span class="st">&quot;speed&quot;</span>, <span class="st">&quot;dist&quot;</span>)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()</span>
+<span id="cb11-13"><a href="#cb11-13"></a>  })</span>
+<span id="cb11-14"><a href="#cb11-14"></a></span>
+<span id="cb11-15"><a href="#cb11-15"></a>  output<span class="op">$</span>plot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({</span>
+<span id="cb11-16"><a href="#cb11-16"></a>    <span class="kw">plot_obj</span>()</span>
+<span id="cb11-17"><a href="#cb11-17"></a>  })</span>
+<span id="cb11-18"><a href="#cb11-18"></a></span>
+<span id="cb11-19"><a href="#cb11-19"></a>  <span class="kw">exportTestValues</span>(</span>
+<span id="cb11-20"><a href="#cb11-20"></a>    <span class="dt">dt =</span> <span class="kw">dt</span>(),</span>
+<span id="cb11-21"><a href="#cb11-21"></a>    <span class="dt">plot_obj =</span> <span class="kw">plot_obj</span>()</span>
+<span id="cb11-22"><a href="#cb11-22"></a>  )</span>
+<span id="cb11-23"><a href="#cb11-23"></a>}</span>
+<span id="cb11-24"><a href="#cb11-24"></a>plot_app &lt;-<span class="st"> </span><span class="kw">shinyApp</span>(<span class="dt">ui =</span> ui, <span class="dt">server =</span> server)</span>
+<span id="cb11-25"><a href="#cb11-25"></a>plot_app</span></code></pre></div>
+<p>Both <code>dt</code> and <code>plot_obj</code> have been <code>export</code>ed. This means that they are available when executing <code>AppDriver$get_values()</code>, <code>AppDriver$get_value()</code>, and <code>AppDriver$expect_values()</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>app &lt;-<span class="st"> </span>AppDriver<span class="op">$</span><span class="kw">new</span>(plot_app)</span>
+<span id="cb12-2"><a href="#cb12-2"></a></span>
+<span id="cb12-3"><a href="#cb12-3"></a>values &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_values</span>()</span>
+<span id="cb12-4"><a href="#cb12-4"></a><span class="kw">str</span>(values) <span class="co"># Output has been truncated for printing</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a><span class="co">#&gt; List of 3</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a><span class="co">#&gt;  $ input :List of 1</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a><span class="co">#&gt;   ..$ n: int 10</span></span>
+<span id="cb12-8"><a href="#cb12-8"></a><span class="co">#&gt;  $ output:List of 1</span></span>
+<span id="cb12-9"><a href="#cb12-9"></a><span class="co">#&gt;   ..$ plot:List of 5</span></span>
+<span id="cb12-10"><a href="#cb12-10"></a><span class="co">#&gt;   .. ..$ src     : chr &quot;data:image/png;base64,iVBORw0&quot;| __truncated__</span></span>
+<span id="cb12-11"><a href="#cb12-11"></a><span class="co">#&gt;   .. ..$ width   : int 962</span></span>
+<span id="cb12-12"><a href="#cb12-12"></a><span class="co">#&gt;   .. ..$ height  : int 400</span></span>
+<span id="cb12-13"><a href="#cb12-13"></a><span class="co">#&gt;   .. ..$ alt     : chr &quot;Plot object&quot;</span></span>
+<span id="cb12-14"><a href="#cb12-14"></a><span class="co">#&gt;   .. ..$ coordmap:List of 2 | __truncated__</span></span>
+<span id="cb12-15"><a href="#cb12-15"></a><span class="co">#&gt;  $ export:List of 2</span></span>
+<span id="cb12-16"><a href="#cb12-16"></a><span class="co">#&gt;   ..$ dt      :&#39;data.frame&#39;: 10 obs. of  2 variables:</span></span>
+<span id="cb12-17"><a href="#cb12-17"></a><span class="co">#&gt;   .. ..$ speed: num [1:10] 4 4 7 7 8 9 10 10 10 11</span></span>
+<span id="cb12-18"><a href="#cb12-18"></a><span class="co">#&gt;   .. ..$ dist : num [1:10] 2 10 4 22 16 10 18 26 34 17</span></span>
+<span id="cb12-19"><a href="#cb12-19"></a><span class="co">#&gt;   ..$ plot_obj:List of 9</span></span>
+<span id="cb12-20"><a href="#cb12-20"></a><span class="co">#&gt;   .. ..$ data       :&#39;data.frame&#39;:   10 obs. of  2 variables:</span></span>
+<span id="cb12-21"><a href="#cb12-21"></a><span class="co">#&gt;   .. .. ..$ speed: num [1:10] 4 4 7 7 8 9 10 10 10 11</span></span>
+<span id="cb12-22"><a href="#cb12-22"></a><span class="co">#&gt;   .. .. ..$ dist : num [1:10] 2 10 4 22 16 10 18 26 34 17</span></span>
+<span id="cb12-23"><a href="#cb12-23"></a><span class="co">#&gt;   .. ..$ layers     :List of 1 | __truncated__</span></span>
+<span id="cb12-24"><a href="#cb12-24"></a><span class="co">#&gt;   .. ..$ scales     :Classes &#39;ScalesList&#39;, &#39;ggproto&#39;, &#39;gg&#39; &lt;ggproto object: Class | __truncated__</span></span>
+<span id="cb12-25"><a href="#cb12-25"></a><span class="co">#&gt;   .. ..$ mapping    :List of 2 | __truncated__</span></span>
+<span id="cb12-26"><a href="#cb12-26"></a><span class="co">#&gt;   .. ..$ theme      : list() | __truncated__</span></span>
+<span id="cb12-27"><a href="#cb12-27"></a><span class="co">#&gt;   .. ..$ coordinates:Classes &#39;CoordCartesian&#39;, &#39;Coord&#39;, &#39;ggproto&#39;, &#39;gg&#39; &lt;ggproto  | __truncated__</span></span>
+<span id="cb12-28"><a href="#cb12-28"></a><span class="co">#&gt;   .. ..$ facet      :Classes &#39;FacetNull&#39;, &#39;Facet&#39;, &#39;ggproto&#39;, &#39;gg&#39; &lt;ggproto object: Class  | __truncated__</span></span>
+<span id="cb12-29"><a href="#cb12-29"></a><span class="co">#&gt;   .. ..$ plot_env   :&lt;environment: 0x7fad13bd3d58&gt;</span></span>
+<span id="cb12-30"><a href="#cb12-30"></a><span class="co">#&gt;   .. ..$ labels     :List of 2</span></span>
+<span id="cb12-31"><a href="#cb12-31"></a><span class="co">#&gt;   .. .. ..$ x: chr &quot;speed&quot;</span></span>
+<span id="cb12-32"><a href="#cb12-32"></a><span class="co">#&gt;   .. .. ..$ y: chr &quot;dist&quot;</span></span>
+<span id="cb12-33"><a href="#cb12-33"></a><span class="co">#&gt;   .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;gg&quot; &quot;ggplot&quot;</span></span></code></pre></div>
+<p>Plots are notoriously hard to test consistently over time and different platforms. Similar to <code>AppDriver$expect_screenshot()</code>, there are many ways outside of your code that the plot can produce a change which would fail a visual test. Some of these include:</p>
+<ul>
+<li>Default system font changes. Different operating systems have different fonts.</li>
+<li>Default system font size changes</li>
+<li>R version changes</li>
+</ul>
+<p>When possible, it is recommended to use <a href="https://ggplot2.tidyverse.org/"><code>{ggplot2}</code></a> over <code>base::plot()</code> as <code>{ggplot2}</code> is getting closer and closer to cross platform compatible. <code>{ggplot2}</code> objects can also be inspected and compared using <a href="https://vdiffr.r-lib.org/"><code>{vdiffr}</code></a> for cross platform support.</p>
+</div>
+<div id="snapshots-vs-values" class="section level2">
+<h2>Snapshots vs values</h2>
+<p>Snapshot testing makes the test writing minimal and quick. However, this comes with a logical risk.</p>
+<p>Snapshots are wonderful at determining if a change has occurred. But for the first execution of the snapshot there is nothing to compare, so the first value is taken as <em>truth</em> even if it is not correct. This allows for the opportunity for invalid values to be saved as <em>truth</em>. Most of the time, it is OK to use snapshots from the beginning of your testing experience, but keeping track of each snapshot file can be tedious when testing multiple applications with having multiple variants.</p>
+<p>To remedy this possibility, app values can be tested against known static values. For example, instead of testing the initial value of <code>dt()</code> against a snapshot, we can test it against <code>head(cars, 10)</code>.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="co"># Snapshot code</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>app<span class="op">$</span><span class="kw">expect_values</span>(<span class="dt">export =</span> <span class="st">&quot;dt&quot;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3"></a></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="co"># Manual expectation code</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a><span class="kw">expect_equal</span>(</span>
+<span id="cb13-6"><a href="#cb13-6"></a>  app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">export =</span> <span class="st">&quot;dt&quot;</span>),</span>
+<span id="cb13-7"><a href="#cb13-7"></a>  <span class="kw">head</span>(cars, <span class="dv">10</span>)</span>
+<span id="cb13-8"><a href="#cb13-8"></a>)</span></code></pre></div>
+<p>If you have the time to manually inspect the snapshot files afterwards, using <code>AppDriver</code> snapshot code provides clean, minimal code. If snapshot files are unwieldy, you can use <code>AppDriver</code> to retrieve values to test against known values.</p>
+</div>
+<div id="example" class="section level2">
+<h2>Example</h2>
+<p>Let’s look at how we could write a <code>{shinytest2}</code> test to make sure the plot is updated after updating our numeric <code>input</code> <code>n</code>. Assuming the Shiny app code above is saved in <code>app.R</code>, we can look at <code>tests/testthat/test-export.R</code> below.</p>
+<p>Since we are not calling <code>AppDriver$expect_screenshot()</code> or <code>AppDriver$get_screenshot()</code>, we do not need to use <code>AppDriver$new(variant=)</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="co"># File: ./tests/testthat/test-export.R</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="co"># App file: ./app.R</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="kw">library</span>(shinytest2)</span>
+<span id="cb14-4"><a href="#cb14-4"></a></span>
+<span id="cb14-5"><a href="#cb14-5"></a><span class="kw">test_that</span>(<span class="st">&quot;`export`ed `plot_obj` is updated by `n`&quot;</span>, {</span>
+<span id="cb14-6"><a href="#cb14-6"></a></span>
+<span id="cb14-7"><a href="#cb14-7"></a>  app &lt;-<span class="st"> </span>AppDriver<span class="op">$</span><span class="kw">new</span>()</span>
+<span id="cb14-8"><a href="#cb14-8"></a></span>
+<span id="cb14-9"><a href="#cb14-9"></a>  <span class="co"># Verify `dt()` uses first 10 lines of `cars`</span></span>
+<span id="cb14-10"><a href="#cb14-10"></a>  n10 &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">input =</span> <span class="st">&quot;n&quot;</span>)</span>
+<span id="cb14-11"><a href="#cb14-11"></a>  <span class="kw">expect_equal</span>(n10, <span class="dv">10</span>)</span>
+<span id="cb14-12"><a href="#cb14-12"></a>  <span class="co"># Verify `dt10()` data is first 10 lines of `cars`</span></span>
+<span id="cb14-13"><a href="#cb14-13"></a>  dt10 &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">export =</span> <span class="st">&quot;dt&quot;</span>)</span>
+<span id="cb14-14"><a href="#cb14-14"></a>  <span class="kw">expect_equal</span>(dt10, <span class="kw">head</span>(cars, n10))</span>
+<span id="cb14-15"><a href="#cb14-15"></a></span>
+<span id="cb14-16"><a href="#cb14-16"></a>  <span class="co"># Verify `plot_obj()` data is `dt()`</span></span>
+<span id="cb14-17"><a href="#cb14-17"></a>  plot_obj_<span class="dv">10</span> &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">export =</span> <span class="st">&quot;plot_obj&quot;</span>)</span>
+<span id="cb14-18"><a href="#cb14-18"></a>  <span class="kw">expect_equal</span>(plot_obj_<span class="dv">10</span><span class="op">$</span>data, dt10)</span>
+<span id="cb14-19"><a href="#cb14-19"></a>  <span class="co"># Verify `plot_obj()` is consistent</span></span>
+<span id="cb14-20"><a href="#cb14-20"></a>  vdiffr<span class="op">::</span><span class="kw">expect_doppelganger</span>(<span class="st">&quot;cars-points-10&quot;</span>, plot_obj_<span class="dv">10</span>)</span>
+<span id="cb14-21"><a href="#cb14-21"></a></span>
+<span id="cb14-22"><a href="#cb14-22"></a>  <span class="co">## Update `n` to 20</span></span>
+<span id="cb14-23"><a href="#cb14-23"></a>  app<span class="op">$</span><span class="kw">set_inputs</span>(<span class="dt">n =</span> <span class="dv">20</span>)</span>
+<span id="cb14-24"><a href="#cb14-24"></a></span>
+<span id="cb14-25"><a href="#cb14-25"></a>  <span class="co"># Verify `n` was updated</span></span>
+<span id="cb14-26"><a href="#cb14-26"></a>  n20 &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">input =</span> <span class="st">&quot;n&quot;</span>)</span>
+<span id="cb14-27"><a href="#cb14-27"></a>  <span class="kw">expect_equal</span>(n20, <span class="dv">20</span>)</span>
+<span id="cb14-28"><a href="#cb14-28"></a>  <span class="co"># Verify `dt()` uses first 20 lines of `cars`</span></span>
+<span id="cb14-29"><a href="#cb14-29"></a>  dt20 &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">export =</span> <span class="st">&quot;dt&quot;</span>)</span>
+<span id="cb14-30"><a href="#cb14-30"></a>  <span class="kw">expect_equal</span>(dt20, <span class="kw">head</span>(cars, n20))</span>
+<span id="cb14-31"><a href="#cb14-31"></a></span>
+<span id="cb14-32"><a href="#cb14-32"></a>  <span class="co"># Verify `plot_obj()` data is `dt()`</span></span>
+<span id="cb14-33"><a href="#cb14-33"></a>  plot_obj_<span class="dv">20</span> &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">export =</span> <span class="st">&quot;plot_obj&quot;</span>)</span>
+<span id="cb14-34"><a href="#cb14-34"></a>  <span class="kw">expect_equal</span>(plot_obj_<span class="dv">20</span><span class="op">$</span>data, dt20)</span>
+<span id="cb14-35"><a href="#cb14-35"></a>  vdiffr<span class="op">::</span><span class="kw">expect_doppelganger</span>(<span class="st">&quot;cars-points-20&quot;</span>, plot_obj_<span class="dv">20</span>)</span>
+<span id="cb14-36"><a href="#cb14-36"></a>})</span></code></pre></div>
+<p>The second half of the test performs similar expectations to the first half of the test. This code can be pulled into a helper function and be written as:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="co"># File: tests/testthat/test-export.R</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="kw">library</span>(shinytest2)</span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="kw">test_that</span>(<span class="st">&quot;`export`ed `plot_obj` is updated by `n`&quot;</span>, {</span>
+<span id="cb15-5"><a href="#cb15-5"></a></span>
+<span id="cb15-6"><a href="#cb15-6"></a>  app &lt;-<span class="st"> </span>AppDriver<span class="op">$</span><span class="kw">new</span>(<span class="dt">variant =</span> <span class="kw">platform_variant</span>())</span>
+<span id="cb15-7"><a href="#cb15-7"></a></span>
+<span id="cb15-8"><a href="#cb15-8"></a>  expect_n_and_plot &lt;-<span class="st"> </span><span class="cf">function</span>(n) {</span>
+<span id="cb15-9"><a href="#cb15-9"></a>    <span class="co"># Verify `n` input equals `n`</span></span>
+<span id="cb15-10"><a href="#cb15-10"></a>    n_val &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">input =</span> <span class="st">&quot;n&quot;</span>)</span>
+<span id="cb15-11"><a href="#cb15-11"></a>    <span class="kw">expect_equal</span>(n_val, n, <span class="dt">expected.label =</span> n)</span>
+<span id="cb15-12"><a href="#cb15-12"></a>    <span class="co"># Verify `dt()` data is first `n` lines of `cars`</span></span>
+<span id="cb15-13"><a href="#cb15-13"></a>    dt &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">export =</span> <span class="st">&quot;dt&quot;</span>)</span>
+<span id="cb15-14"><a href="#cb15-14"></a>    <span class="kw">expect_equal</span>(dt, <span class="kw">head</span>(cars, n), <span class="dt">expected.label =</span> <span class="kw">paste0</span>(<span class="st">&quot;head(cars, &quot;</span>, n, <span class="st">&quot;)&quot;</span>))</span>
+<span id="cb15-15"><a href="#cb15-15"></a></span>
+<span id="cb15-16"><a href="#cb15-16"></a>    <span class="co"># Verify `plot_obj()` data is `dt()`</span></span>
+<span id="cb15-17"><a href="#cb15-17"></a>    plot_obj &lt;-<span class="st"> </span>app<span class="op">$</span><span class="kw">get_value</span>(<span class="dt">export =</span> <span class="st">&quot;plot_obj&quot;</span>)</span>
+<span id="cb15-18"><a href="#cb15-18"></a>    <span class="kw">expect_equal</span>(plot_obj<span class="op">$</span>data, dt, <span class="dt">info =</span> <span class="kw">paste0</span>(<span class="st">&quot;n = &quot;</span>, n))</span>
+<span id="cb15-19"><a href="#cb15-19"></a>    <span class="co"># Verify `plot_obj()` is consistent</span></span>
+<span id="cb15-20"><a href="#cb15-20"></a>    vdiffr<span class="op">::</span><span class="kw">expect_doppelganger</span>(<span class="kw">paste0</span>(<span class="st">&quot;cars-points-&quot;</span>, n), plot_obj)</span>
+<span id="cb15-21"><a href="#cb15-21"></a>  }</span>
+<span id="cb15-22"><a href="#cb15-22"></a></span>
+<span id="cb15-23"><a href="#cb15-23"></a>  <span class="kw">expect_n_and_plot</span>(<span class="dv">10</span>)</span>
+<span id="cb15-24"><a href="#cb15-24"></a></span>
+<span id="cb15-25"><a href="#cb15-25"></a>  <span class="co"># Update `n` to 20</span></span>
+<span id="cb15-26"><a href="#cb15-26"></a>  app<span class="op">$</span><span class="kw">set_inputs</span>(<span class="dt">n =</span> <span class="dv">20</span>)</span>
+<span id="cb15-27"><a href="#cb15-27"></a>  <span class="kw">expect_n_and_plot</span>(<span class="dv">20</span>)</span>
+<span id="cb15-28"><a href="#cb15-28"></a>})</span></code></pre></div>
+<p>It should be noted that <code>{ggplot2}</code> objects can not be serialized to <code>JSON</code> and should be excluded from the <code>AppDriver$expect_values()</code> snapshots.</p>
+</div>
+</div>
+<div id="cliff-notes" class="section level1">
+<h1>Cliff Notes</h1>
+<div id="retrieving-values" class="section level4">
+<h4>Retrieving values</h4>
+<ul>
+<li><code>AppDriver$get_values()</code>, <code>AppDriver$get_value()</code>:
+<ul>
+<li><strong>Best way to retrieve values</strong> as they have been serialized by <code>saveRDS()</code></li>
+<li><strong>Safest way to compare values</strong> as comparisons (e.g. <code>expect_equal()</code>) will need to be explicitly stated from the beginning</li>
+<li>Pro: Supports more complex objects like <code>{ggplot2}</code> plots</li>
+<li>Con: Causes code to be more verbose</li>
+</ul></li>
+</ul>
+</div>
+<div id="expectation-methods" class="section level4">
+<h4>Expectation methods</h4>
+<p>All <code>AppDriver$expect_*()</code> should have their snapshots manually inspected when first created to ensure they contain expected content.</p>
+<ul>
+<li><code>AppDriver$expect_values()</code>:
+<ul>
+<li><strong>Go-to expectation method</strong> for Shiny <code>input</code>, <code>output</code>, and <code>export</code> values</li>
+<li><strong>Automatically recorded</strong> in <code>shinytest2::record_app()</code></li>
+<li>Saves a <em>debug</em> screenshot for manual inspection</li>
+<li>Pro: Tests (almost) all Shiny values</li>
+<li>Con: Complex objects containing environments (e.g. <code>{ggplot2}</code> plots) can not be serialized to JSON</li>
+<li>Get: <code>AppDriver$get_value()</code> and <code>AppDriver$get_values()</code></li>
+</ul></li>
+<li><code>AppDriver$expect_download()</code>:
+<ul>
+<li><strong>Automatically recorded</strong> in <code>shinytest2::record_app()</code></li>
+<li>Pro: Will save a snapshot of the requested <code>filename</code></li>
+<li>Get: <code>AppDriver$get_download()</code></li>
+</ul></li>
+<li><code>AppDriver$expect_text()</code>:
+<ul>
+<li>Safest way to retrieve text for a given <code>selector</code></li>
+<li>More stable than than <code>AppDriver$expect_html()</code>. Gives more freedom to UI authors to make HTML structure changes</li>
+<li>Pro: Can test non-Shiny content using the <code>selector</code></li>
+<li>Con: Can not be used to test text inputs</li>
+<li>Get: <code>AppDriver$get_text()</code></li>
+</ul></li>
+<li><code>AppDriver$expect_html()</code>
+<ul>
+<li>Expects all HTML to be consistently shaped for a given <code>selector</code></li>
+<li>More stable than than <code>AppDriver$expect_screenshot()</code>. Gives more freedom to UI authors.</li>
+<li>Pro: Can test non-Shiny content using the <code>selector</code></li>
+<li>Con: Can not be used to test text inputs</li>
+<li>Get: <code>AppDriver$get_html()</code></li>
+</ul></li>
+<li><code>AppDriver$expect_js()</code>:
+<ul>
+<li>Makes an expectation on the JavaScript result</li>
+<li>Building block for <code>AppDriver$expect_text()</code> and <code>AppDriver$expect_html()</code></li>
+<li>Con: Must write own JavaScript code to test.</li>
+<li>Get: <code>AppDriver$get_js()</code></li>
+</ul></li>
+<li><code>AppDriver$expect_screenshot()</code>:
+<ul>
+<li>Saves a screenshot of a selector (defaults to <code>&quot;html&quot;</code>) for later comparison</li>
+<li><strong>Strongly recommended to use other testing methods when possible</strong></li>
+<li>Pro: A picture can be worth a thousand [tests]</li>
+<li>Con: Screenshot reproducibility is <strong>very</strong> brittle to non-Shiny changes</li>
+<li>Get: <code>AppDriver$get_screenshot()</code></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
