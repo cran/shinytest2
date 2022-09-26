@@ -48,7 +48,7 @@ if (isTRUE(getOption("shiny.testmode"))) {
 
 ## How can I get the objects from files in my the R folder into the testing environment?
 
-Loading the support environment for a Shiny application requires a call to `shinytest2::load_app_env()` in `./tests/testthat/setup.R`. This method will load the `global.R` and all R files into the testing environment, similar to testing package R code.
+Loading the support environment for a Shiny application requires a call to `shinytest2::load_app_env()` in `./tests/testthat/setup-shinytest2.R`. This method will load the `global.R` and all R files into the testing environment, similar to testing package R code.
 
 This is not automatically performed as it may be costly to load the support environment.
 
@@ -100,6 +100,39 @@ Input values can face the same issues, and they can also be modified with `shiny
 
 For code completeness, you should call `app$stop()` at the end of your tests to shut down the background Shiny process and current Chromote Session.
 
-However, `{shinytest2}` does not do this for code brevity and relies on `AppDriver$private$finalizer()` (which is called when the value is garbage collected or the R session is stopped) to call `AppDriver$stop()`.
+If your R session is starting to feel more sluggish, you may want to call `app$stop()` manually. Or if you are programmatically creating many instances of `AppDriver`, you may want to call `app$stop()` when the specific test is complete via `withr::defer(app$stop())` right after initialization.
 
-If your R session is starting to feel more sluggish, you may want to call `app$stop()` manually. Or if you are programmatically creating many instances of `AppDriver`, you may want to call `app$stop()` when the specific test is complete.
+## How can I open the test to see if bookmarks are working?
+
+Testing Shiny bookmarks requires the browser to be loaded with specific query parameters. Luckily, you can use `{shinytest2}` to help you achieve this by running a local `AppDriver` and another `AppDriver` that uses a url with your specific query parameters! ([Original code](https://github.com/rstudio/shinytest2/issues/219#issuecomment-1149162328), [Working example](https://github.com/rstudio/shinytest2/tree/v0.2.0/tests/testthat/apps/download))
+
+File: `tests/testthat//test-bookmark.R`
+```{r}
+test_that("Bookmark works", {
+  # Start local app in the background in test mode
+  bg_app <- shinytest2::AppDriver$new("path/to/shiny/app")
+  # Capture the background app's URL and add appropriate query parameters
+  bookmark_url <- paste0(bg_app$get_url(), "?_inputs_&n=10")
+  # Open the bookmark URL in a new AppDriver object
+  app <- shinytest2::AppDriver$new(bookmark_url)
+
+  # Run your tests on the bookmarked `app`
+  app$expect_values()
+})
+```
+
+File: `tests/testthat/_snaps/bookmark/001.json`
+```json
+{
+  "input": {
+    "._bookmark_": 0,
+    "caps": true,
+    "txt": "abcd"
+  },
+  "output": {
+    "out": "ABCD"
+  },
+  "export": {
+  }
+}
+```

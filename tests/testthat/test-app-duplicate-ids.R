@@ -1,5 +1,3 @@
-skip_on_cran() # Uses chromote
-
 require("shiny", quietly = TRUE, character.only = TRUE)
 
 test_that("Duplicate input ids are found", {
@@ -24,9 +22,6 @@ test_that("Duplicate input ids are found", {
     app$expect_unique_names(),
     "text"
   )
-
-  # Shut down this app to try an make CI happier about the next app
-  app$stop()
 })
 
 test_that("Duplicate input/output ids are found", {
@@ -51,9 +46,6 @@ test_that("Duplicate input/output ids are found", {
     app$expect_unique_names(),
     "select"
   )
-
-  # Shut down this app to try an make CI happier about the next app
-  app$stop()
 })
 
 
@@ -79,9 +71,6 @@ test_that("Duplicate output ids are found", {
     app$expect_unique_names(),
     "custom"
   )
-
-  # Shut down this app to try an make CI happier about the next app
-  app$stop()
 })
 
 

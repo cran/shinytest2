@@ -1,4 +1,5 @@
 ## ----setup, include=FALSE-----------------------------------------------------
+library(shiny)
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
 ## -----------------------------------------------------------------------------
@@ -40,6 +41,7 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 #  
 #    shiny_app <- hello_world_app()
 #    app <- AppDriver$new(shiny_app, name = "hello")
+#  
 #    app$expect_values()
 #  })
 

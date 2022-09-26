@@ -34,7 +34,7 @@ NULL
 #' @section Start-up failure:
 #'
 #' If the app throws an error during initialization, the `AppDriver` will
-#' will be stored in `rlang::last_error()$app`. This allows for the "failure
+#' be stored in `rlang::last_error()$app`. This allows for the "failure
 #' to initialize" to be signaled while also allowing for the `app` to be
 #' retrieved after any initialization error has been thrown.
 #'
@@ -43,7 +43,7 @@ NULL
 #' Reactive values from within your Shiny application can be exported using the
 #' method:
 #' [`shiny::exportTestValues()`](https://shiny.rstudio.com/reference/shiny/latest/exportTestValues.html).
-#' This under utilized method exposes internal values of your app
+#' This underutilized method exposes internal values of your app
 #' without needing to create a corresponding input value or output value.
 #'
 #' For example:
@@ -73,6 +73,7 @@ NULL
 #' )
 #'
 #' app <- AppDriver$new(shiny_app)
+#'
 #' init_vals <- app$get_values()
 #' str(init_vals)
 #' #> List of 3
@@ -126,11 +127,13 @@ NULL
 #'
 #' @param ... Must be empty. Allows for parameter expansion.
 #' @param timeout Amount of time to wait before giving up (milliseconds).
+#'   Defaults to the resolved `timeout` value during the `AppDriver` initialization.
+#' @param timeout_ Amount of time to wait before giving up (milliseconds).
+#'   Defaults to the resolved `timeout` value during the `AppDriver` initialization.
 #' @param cran Should these expectations be verified on CRAN? By default,
 #'        they are not because snapshot tests tend to be fragile
 #'        because they often rely on minor details of dependencies.
 #' @param wait_ Wait until all reactive updates have completed?
-#' @param timeout_ Amount of time to wait before giving up (milliseconds).
 #' @param hash_images If `TRUE`, images will be hashed before being returned.
 #'   Otherwise, all images will return their full data64 encoded value.
 #' @param screenshot_args This named list of arguments is passed along to
@@ -144,13 +147,13 @@ NULL
 #'
 #' If a `FALSE` value is provided, the parameter will be ignored and a
 #' screenshot will be taken with default behavior.
-#' @param delay The number of milliseconds to wait before taking the screenshot.
-#'   This value can either be supplied as `delay` or `screenshot_args`'s delay
-#'   slot. The `delay` parameter will have preference.
+#' @param delay The number of **seconds** to wait before taking the screenshot.
+#'   This value can be supplied as `delay` or `screenshot_args$delay`, with the
+#'   `delay` parameter having preference.
 #' @param selector The selector is a CSS selector that will be used to select a
-#'   portion of the page to be captured. This value can either be supplied as
-#'   `selector` or `screenshot_args`'s selector slot. The `selector` parameter
-#'   will have preference.
+#'   portion of the page to be captured. This value can be supplied as
+#'   `selector` or `screenshot_args$selector`, with the `selector` parameter
+#'   having preference.
 #' @importFrom R6 R6Class
 #' @seealso [`platform_variant()`], [`use_shinytest2_test()`]
 #' @export
@@ -164,6 +167,9 @@ AppDriver <- R6Class( # nolint
 
     counter = "<Count>",
     shiny_url = "<Url>",
+
+    load_timeout = 15 * 1000, # Time for shiny app to load; ms
+    timeout = 4 * 1000, # Default timeout value; ms
 
     logs = list(), # List of all log messages added via `$log_message()`
 
@@ -190,11 +196,19 @@ AppDriver <- R6Class( # nolint
     #' @description
     #' Initialize an `AppDriver` object
     #'
-    #' @param app_dir Directory containing your Shiny application or a run-time
-    #'   Shiny R Markdown document. By default, it retrieves
-    #'   `test_path("../../")` to allow for interactive and testing usage. A
-    #'   Shiny application URL can be provided, however snapshots will be saved
-    #'   in the current directory.
+    #' @param app_dir This value can be many different things:
+    #'   * A directory containing your Shiny application or a run-time Shiny R
+    #'     Markdown document.
+    #'   * A URL pointing to your shiny application. (Don't forget to set
+    #'     `testmode = TRUE` when running your application!)
+    #'   * A Shiny application object which inherits from `"shiny.appobj"`.
+    #'
+    #' By default, `app_dir` is set to `test_path("../../")` to work in both
+    #' interactive and testing usage.
+    #'
+    #' If a file path is not provided to `app_dir`, snapshots will be saved as
+    #' if the root of the Shiny application was the current directory.
+    #'
     #' @param name Prefix value to use when saving testthat snapshot files. Ex:
     #'   `NAME-001.json`. Name **must** be unique when saving multiple snapshots
     #'   from within the same testing file. Otherwise, two different `AppDriver`
@@ -204,8 +218,19 @@ AppDriver <- R6Class( # nolint
     #'   For apps that use R's random number generator, this can make their
     #'   behavior repeatable.
     #' @param load_timeout How long to wait for the app to load, in ms.
-    #'   This includes the time to start R. Defaults to 10s when running
-    #'   locally and 20s when running on CI.
+    #'   This includes the time to start R. Defaults to 15s.
+    #'
+    #'   If `load_timeout` is missing, the first numeric value found will be used:
+    #'   * R option `options(shinytest2.load_timeout=)`
+    #'   * System environment variable `SHINYTEST2_LOAD_TIMEOUT`
+    #'   * `15 * 1000` (15 seconds)
+    #' @param timeout Default number of milliseconds for any `timeout` or
+    #'   `timeout_` parameter in the `AppDriver` class. Defaults to 4s.
+    #'
+    #'   If `timeout` is missing, the first numeric value found will be used:
+    #'   * R option `options(shinytest2.timeout=)`
+    #'   * System environment variable `SHINYTEST2_TIMEOUT`
+    #'   * `4 * 1000` (4 seconds)
     #' @param wait If `TRUE`, `$wait_for_idle(duration = 200, timeout = load_timeout)`
     #'   will be called once the app has connected a new session, blocking until the
     #'   Shiny app is idle for 200ms.
@@ -253,7 +278,8 @@ AppDriver <- R6Class( # nolint
       name = NULL,
       variant = missing_arg(),
       seed = NULL,
-      load_timeout = NULL,
+      load_timeout = missing_arg(),
+      timeout = missing_arg(),
       wait = TRUE,
       screenshot_args = missing_arg(),
       expect_values_screenshot_args = TRUE,
@@ -271,6 +297,7 @@ AppDriver <- R6Class( # nolint
         app_dir = app_dir,
         ...,
         load_timeout = load_timeout,
+        timeout = timeout,
         wait = wait,
         expect_values_screenshot_args = expect_values_screenshot_args,
         screenshot_args = screenshot_args,
@@ -358,6 +385,7 @@ AppDriver <- R6Class( # nolint
     #' \dontrun{
     #' app_path <- system.file("examples/07_widgets", package = "shiny")
     #' app <- AppDriver$new(app_path)
+    #'
     #' cat(app$get_text("#view"))
     #' app$set_inputs(dataset = "cars", obs = 6)
     #' app$click("update")
@@ -366,7 +394,7 @@ AppDriver <- R6Class( # nolint
     set_inputs = function(
       ...,
       wait_ = TRUE,
-      timeout_ = 3 * 1000,
+      timeout_ = missing_arg(),
       allow_no_input_binding_ = FALSE,
       priority_ = c("input", "event")
     ) {
@@ -394,7 +422,7 @@ AppDriver <- R6Class( # nolint
     #' # Upload file to input named: file1
     #' app$upload_file(file1 = tmpfile)
     #' }
-    upload_file = function(..., wait_ = TRUE, timeout_ = 3 * 1000) {
+    upload_file = function(..., wait_ = TRUE, timeout_ = missing_arg()) {
       app_upload_file(self, private, ..., wait_ = wait_, timeout_ = timeout_)
     },
 
@@ -503,6 +531,7 @@ AppDriver <- R6Class( # nolint
     #' \dontrun{
     #' app_path <- system.file("examples/04_mpg", package = "shiny")
     #' app <- AppDriver$new(app_path)
+    #'
     #' # Retrieve a single value
     #' app$get_value(output = "caption")
     #' #> [1] "mpg ~ cyl"
@@ -654,7 +683,7 @@ AppDriver <- R6Class( # nolint
     #' * If a [\code{content-disposition} \code{filename}](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition) is provided,
     #' then a temp file containing this `filename` will be
     #' returned.
-    #' * Otherwise, a tempfile ending in `.download` will be returned.
+    #' * Otherwise, a temp file ending in `.download` will be returned.
     #' @examples
     #' \dontrun{
     #' app_path <- system.file("examples/10_download", package = "shiny")
@@ -747,6 +776,7 @@ AppDriver <- R6Class( # nolint
     #' \dontrun{
     #' app_path <- system.file("examples/04_mpg", package = "shiny")
     #' app <- AppDriver$new(app_path)
+    #'
     #' # Save a snapshot of the `caption` output
     #' app$expect_html("#caption")
     #' }
@@ -773,6 +803,7 @@ AppDriver <- R6Class( # nolint
     #' \dontrun{
     #' app_path <- system.file("examples/03_reactivity", package = "shiny")
     #' app <- AppDriver$new(app_path, check_names = FALSE)
+    #'
     #' app$set_inputs(caption = "Custom value!")
     #' cat(app$get_html(".shiny-input-container")[1])
     #' #> <div class="form-group shiny-input-container">
@@ -817,7 +848,7 @@ AppDriver <- R6Class( # nolint
       script = missing_arg(),
       ...,
       file = missing_arg(),
-      timeout = 15 * 1000,
+      timeout = missing_arg(),
       pre_snapshot = NULL,
       cran = FALSE
     ) {
@@ -893,7 +924,7 @@ AppDriver <- R6Class( # nolint
       script = missing_arg(),
       ...,
       file = missing_arg(),
-      timeout = 15 * 1000
+      timeout = missing_arg()
     ) {
       app_get_js(
         self, private,
@@ -937,7 +968,7 @@ AppDriver <- R6Class( # nolint
       script = missing_arg(),
       ...,
       file = missing_arg(),
-      timeout = 15 * 1000
+      timeout = missing_arg()
     ) {
       app_run_js(
         self, private,
@@ -981,28 +1012,104 @@ AppDriver <- R6Class( # nolint
     #' @param name The file name to be used for the snapshot. The file extension
     #'   will overwritten to `.png`. By default, the `name` supplied to
     #'   `app` on initialization with a counter will be used (e.g. `"NAME-001.png"`).
+    #' @param compare A function used to compare the screenshot snapshot files.
+    #' The function should take two inputs, the paths to the `old` and `new`
+    #' snapshot, and return either `TRUE` or `FALSE`.
+    #'
+    #' `compare` defaults to a function that wraps around
+    #' `compare_screenshot_threshold(old, new, threshold = threshold,
+    #' kernel_size = kernel_size, quiet = quiet)`. Note: if `threshold` is
+    #' `NULL` (default), `compare` will behave as if
+    #' [`testthat::compare_file_binary()`] was provided, comparing the two
+    #' images byte-by-byte.
+    #' @param threshold Parameter supplied to [`compare_screenshot_threshold()`]
+    #' when using the default `compare` method. If the value of `threshold` is
+    #' NULL`, [`compare_screenshot_threshold()`] will act like
+    #' [`testthat::compare_file_binary`]. However, if `threshold` is a positive number,
+    #' it will be compared against the largest convolution value found if the
+    #' two images fail a [`testthat::compare_file_binary`] comparison.
+    #'
+    #' Which value should I use? Threshold values values below 5 help deter
+    #' false-positive screenshot comparisons (such as inconsistent rounded
+    #' corners). Larger values in the 10s and 100s will help find _real_
+    #' changes. However, not all values are one size fits all and you will need
+    #' to play with a threshold that fits your needs.
+    #' @param kernel_size Parameter supplied to [`compare_screenshot_threshold()`]
+    #' when using the default `compare` method. The `kernel_size` represents the
+    #' height and width of the convolution kernel applied to the pixel
+    #' differences. This integer-like value should be relatively small.
+    #' @param quiet Parameter supplied to [`compare_screenshot_threshold()`]
+    #' when using the default `compare` method. If `FALSE`, diagnostic
+    #' information will be presented when the computed value is larger than a
+    #' non-`NULL` `threshold` value.
     #' @examples
     #' \dontrun{
+    #' # These example lines should be performed in a `./tests/testthat`
+    #' # test file so that snapshot files can be properly saved
+    #'
     #' app_path <- system.file("examples/01_hello", package = "shiny")
     #' app <- AppDriver$new(app_path, variant = platform_variant())
     #'
-    #' # Expect a full size screenshot
+    #' # Expect a full size screenshot to be pixel perfect
     #' app$expect_screenshot()
     #'
-    #' # Very brittle test
+    #' # Images are brittle when containing plots
     #' app$expect_screenshot(selector = "#distPlot")
+    #'
+    #' # Test with more threshold in pixel value differences
+    #' # Helps with rounded corners
+    #' app$expect_screenshot(threshold = 10)
+    #'
+    #' # Equivalent expectations
+    #' app$expect_screenshot() # default
+    #' app$expect_screenshot(threshold = NULL)
+    #' app$expect_screenshot(compare = testthat::compare_file_binary)
+    #' expect_snapshot_file(
+    #'   app$get_screenshot(),
+    #'   variant = app$get_variant(),
+    #'   compare = testthat::compare_file_binary
+    #' )
+    #'
+    #' # Equivalent expectations
+    #' app$expect_screenshot(threshold = 3, kernel_size = 5)
+    #' app$expect_screenshot(compare = function(old, new) {
+    #'   compare_screenshot_threshold(
+    #'     old, new,
+    #'     threshold = 3,
+    #'     kernel_size = 5
+    #'   )
+    #' })
+    #' expect_screenshot_file(
+    #'   app$get_screenshot(),
+    #'   variant = app$get_variant(),
+    #'   compare = function(old, new) {
+    #'     compare_screenshot_threshold(
+    #'       old, new,
+    #'       threshold = 3,
+    #'       kernel_size = 5
+    #'     )
+    #'   }
+    #' )
     #' }
     expect_screenshot = function(
       ...,
+      threshold = NULL,
+      kernel_size = 5,
       screenshot_args = missing_arg(),
       delay = missing_arg(),
       selector = missing_arg(),
+      compare = missing_arg(),
+      quiet = FALSE,
       name = NULL,
       cran = FALSE
     ) {
       app_expect_screenshot_and_variant(
         self, private,
         ...,
+        threshold = threshold,
+        kernel_size = kernel_size,
+        quiet = quiet,
+        compare = compare,
         screenshot_args = screenshot_args,
         delay = delay,
         selector = selector,
@@ -1023,10 +1130,10 @@ AppDriver <- R6Class( # nolint
     #' app_path <- system.file("examples/01_hello", package = "shiny")
     #' app <- AppDriver$new(app_path)
     #'
-    #' # Display in viewer
+    #' # Display in graphics device
     #' app$get_screenshot()
     #'
-    #' # Update bins then display `"disPlot"` in viewer
+    #' # Update bins then display `"disPlot"` in graphics device
     #' app$set_inputs(bins = 10)
     #' app$get_screenshot(selector = "#distPlot")
     #'
@@ -1042,7 +1149,7 @@ AppDriver <- R6Class( # nolint
       delay = missing_arg(),
       selector = missing_arg()
     ) {
-      app_screenshot(
+      app_get_screenshot(
         self, private,
         file = file,
         ...,
@@ -1070,7 +1177,6 @@ AppDriver <- R6Class( # nolint
     #' resizing the window.)
     #' @param duration How long Shiny must be idle (in ms) before unblocking the
     #'   R session.
-    #' @param timeout How often to check for the condition, in ms.
     #' @return `invisible(self)` if Shiny stabilizes within the `timeout`.
     #'   Otherwise an error will be thrown
     #' @examples
@@ -1103,7 +1209,7 @@ AppDriver <- R6Class( # nolint
     #' # Will not be equal
     #' identical(pre_value, post_value)
     #' }
-    wait_for_idle = function(duration = 500, timeout = 30 * 1000) {
+    wait_for_idle = function(duration = 500, timeout = missing_arg()) {
       app_wait_for_idle(self, private, duration = duration, timeout = timeout)
     },
 
@@ -1120,7 +1226,8 @@ AppDriver <- R6Class( # nolint
     #'   Only one of these parameters may be used.
     #' @param ignore List of possible values to ignore when checking for
     #'   updates.
-    #' @param timeout How long to wait (in ms) before throwing an error.
+    #' @param timeout_ Amount of time to wait for a new `output` value before giving up (milliseconds).
+    #'   Defaults to the resolved `timeout` value during the `AppDriver` initialization.
     #' @param interval How often to check for the condition, in ms.
     #' @return Newly found value
     #' @examples
@@ -1171,7 +1278,7 @@ AppDriver <- R6Class( # nolint
       output = missing_arg(),
       export = missing_arg(),
       ignore = list(NULL, ""),
-      timeout = 15 * 1000,
+      timeout = missing_arg(),
       interval = 400
     ) {
       app_wait_for_value(
@@ -1191,8 +1298,9 @@ AppDriver <- R6Class( # nolint
     #'   eventually return a [`true`thy
     #'   value](https://developer.mozilla.org/en-US/docs/Glossary/Truthy) or a
     #'   timeout error will be thrown.
-    #' @param timeout How long the script has to return a `true`thy value, in ms.
-    #' @param interval How often to check for the condition, in ms.
+    #' @param timeout How long the script has to return a `true`thy value (milliseconds).
+    #'   Defaults to the resolved `timeout` value during the `AppDriver` initialization.
+    #' @param interval How often to check for the condition (milliseconds).
     #' @return `invisible(self)` if expression evaluates to `true` without error
     #'   within the timeout. Otherwise an error will be thrown
     #' @examples
@@ -1211,8 +1319,17 @@ AppDriver <- R6Class( # nolint
     #' app$run_js(file = "complicated_file.js")
     #' app$wait_for_js("complicated_condition();")
     #' }
-    wait_for_js = function(script, timeout = 30 * 1000, interval = 100) {
-      app_wait_for_js(self, private, script = script, timeout = timeout, interval = interval)
+    wait_for_js = function(
+      script,
+      timeout = missing_arg(),
+      interval = 100
+    ) {
+      app_wait_for_js(
+        self, private,
+        script = script,
+        timeout = timeout,
+        interval = interval
+      )
     },
 
 
@@ -1245,6 +1362,7 @@ AppDriver <- R6Class( # nolint
     #' #> ! Shiny inputs should have unique HTML id values.
     #' #> i The following HTML id values are not unique:
     #' #> • text
+    #' app$stop()
     #'
     #' # Manually assert that all names are unique
     #' app <- AppDriver$new(shiny_app, check_names = FALSE)
@@ -1254,6 +1372,7 @@ AppDriver <- R6Class( # nolint
     #' #> i The following HTML id values are not unique:
     #' #>   • text
     #' #> Class:   rlang_warning/warning/condition
+    #' app$stop()
     #' }
     expect_unique_names = function() {
       app_expect_unique_names(self, private)
@@ -1270,6 +1389,7 @@ AppDriver <- R6Class( # nolint
     #' \dontrun{
     #' app_path <- system.file("examples/01_hello", package = "shiny")
     #' app <- AppDriver$new(app_path)
+    #'
     #' identical(app$get_dir(), app_path)
     #' #> [1] TRUE
     #' }
@@ -1284,6 +1404,7 @@ AppDriver <- R6Class( # nolint
     #' \dontrun{
     #' app_path <- system.file("examples/01_hello", package = "shiny")
     #' app <- AppDriver$new(app_path)
+    #'
     #' browseURL(app$get_url())
     #' }
     get_url = function() {
@@ -1299,6 +1420,7 @@ AppDriver <- R6Class( # nolint
     #' \dontrun{
     #' app_path <- system.file("examples/01_hello", package = "shiny")
     #' app <- AppDriver$new(app_path)
+    #'
     #' app$get_window_size()
     #' #> $width
     #' #> [1] 992
@@ -1350,6 +1472,7 @@ AppDriver <- R6Class( # nolint
     #' \dontrun{
     #' app_path <- system.file("examples/01_hello", package = "shiny")
     #' app <- AppDriver$new(app_path)
+    #'
     #' b <- app$get_chromote_session()
     #' b$Runtime$evaluate("1 + 1")
     #' #> $result
@@ -1376,6 +1499,7 @@ AppDriver <- R6Class( # nolint
     #' app_path <- system.file("examples/01_hello", package = "shiny")
     #'
     #' app <- AppDriver$new(app_path)
+    #'
     #' app$get_variant()
     #' #> NULL
     #'
@@ -1391,11 +1515,6 @@ AppDriver <- R6Class( # nolint
     #' Get all logs
     #'
     #' Retrieve all of the debug logs that have been recorded.
-    #' There are a few standard debug types that may be used:
-    #' * `"shiny_console"`: Displays the console messages from the Shiny server when `$get_logs()` is called.
-    #' * `"browser"`: Displays the browser console messages when `$get_logs()` is called.
-    #' * `"shinytest2"`: Displays the messages saved by the `window.shinytest2` object in the browser when `$get_logs()` is called.
-    #' * `"ws_messages"`: Saves all messages sent by Shiny to the
     #' @return A data.frame with the following columns:
     #' * `workerid`: The shiny worker ID found within the browser
     #' * `timestamp`: POSIXct timestamp of the message
@@ -1410,9 +1529,8 @@ AppDriver <- R6Class( # nolint
     #'      for more details
     #' * `level`: For a given location, there are different types of log levels.
     #'   * `"shinytest2"`: `"log"`; Only log messages are captured.
-    #'   * `"shiny"`: `"log"` or `"error"`; These two levels correspond to the
-    #'     `stdin` or `stdout` messages. Note, `message()` output is sent to
-    #'     `stderr` which is recorded as `"error"`.
+    #'   * `"shiny"`: `"stdout"` or `"stderr"`; Note, `message()` output is sent
+    #'     to `stderr`.
     #'   * `"chromote"`: Correspond to any level of a JavaScript
     #'     `console.LEVEL()` function call. Typically, these are "log"` and
     #'     `"error"` but can include `"info"`, `"debug"`, and `"warn"`. If
@@ -1420,103 +1538,91 @@ AppDriver <- R6Class( # nolint
     #'     `"websocket"`.
     #' @examples
     #' \dontrun{
-    #' app <- AppDriver$new(system.file("examples/01_hello", package = "shiny"))
-    #' app$get_logs()
-    #' # \{shinytest2\} R  info  11:15:20.11 Start AppDriver initialization
-    #' # \{shinytest2\} R  info  11:15:20.11 Starting Shiny app
-    #' # \{shinytest2\} R  info  11:15:20.99 Creating new chromote session
-    #' # \{shinytest2\} R  info  11:15:21.14 Navigating to Shiny app
-    #' # \{shinytest2\} R  info  11:15:21.27 Injecting shiny-tracer.js
-    #' # \{chromote\}   JS info  11:15:21.28 shinytest2; jQuery not found
-    #' # \{chromote\}   JS info  11:15:21.28 shinytest2; Loaded
-    #' # \{shinytest2\} R  info  11:15:21.28 Waiting until Shiny app starts
-    #' # \{chromote\}   JS info  11:15:21.35 shinytest2; jQuery found
-    #' # \{chromote\}   JS info  11:15:21.35 shinytest2; Waiting for shiny session to connect
-    #' # \{chromote\}   JS info  11:15:21.57 shinytest2; Connected
-    #' # \{chromote\}   JS info  11:15:21.57 shinytest2; Ready
-    #' # \{chromote\}   JS info  11:15:21.65 shinytest2; shiny:busy
-    #' # \{shinytest2\} R  info  11:15:21.65 Shiny app started
-    #' # \{chromote\}   JS info  11:15:21.88 shinytest2; shiny:idle
-    #' # \{chromote\}   JS info  11:15:21.88 shinytest2; shiny:value distPlot
-    #' # \{shiny\}      R  error ----------- Loading required package: shiny
-    #' # \{shiny\}      R  error ----------- Running application in test mode.
-    #' # \{shiny\}      R  error -----------
-    #' # \{shiny\}      R  error ----------- Listening on http://127.0.0.1:42558
+    #' app1 <- AppDriver$new(system.file("examples/01_hello", package = "shiny"))
+    #'
+    #' app1$get_logs()
+    #' #> \{shinytest2\} R  info   10:00:28.86 Start AppDriver initialization
+    #' #> \{shinytest2\} R  info   10:00:28.86 Starting Shiny app
+    #' #> \{shinytest2\} R  info   10:00:29.76 Creating new ChromoteSession
+    #' #> \{shinytest2\} R  info   10:00:30.56 Navigating to Shiny app
+    #' #> \{shinytest2\} R  info   10:00:30.70 Injecting shiny-tracer.js
+    #' #> \{chromote\}   JS info   10:00:30.75 shinytest2; jQuery found
+    #' #> \{chromote\}   JS info   10:00:30.77 shinytest2; Waiting for shiny session to connect
+    #' #> \{chromote\}   JS info   10:00:30.77 shinytest2; Loaded
+    #' #> \{shinytest2\} R  info   10:00:30.77 Waiting for Shiny to become ready
+    #' #> \{chromote\}   JS info   10:00:30.90 shinytest2; Connected
+    #' #> \{chromote\}   JS info   10:00:30.95 shinytest2; shiny:busy
+    #' #> \{shinytest2\} R  info   10:00:30.98 Waiting for Shiny to become idle for 200ms within 15000ms
+    #' #> \{chromote\}   JS info   10:00:30.98 shinytest2; Waiting for Shiny to be stable
+    #' #> \{chromote\}   JS info   10:00:31.37 shinytest2; shiny:idle
+    #' #> \{chromote\}   JS info   10:00:31.38 shinytest2; shiny:value distPlot
+    #' #> \{chromote\}   JS info   10:00:31.57 shinytest2; Shiny has been idle for 200ms
+    #' #> \{shinytest2\} R  info   10:00:31.57 Shiny app started
+    #' #> \{shiny\}      R  stderr ----------- Loading required package: shiny
+    #' #> \{shiny\}      R  stderr ----------- Running application in test mode.
+    #' #> \{shiny\}      R  stderr -----------
+    #' #> \{shiny\}      R  stderr ----------- Listening on http://127.0.0.1:4679
     #'
     #'
     #' # To capture all websocket traffic, set `options = list(shiny.trace = TRUE)`
-    #' app <- AppDriver$new(
+    #' app2 <- AppDriver$new(
     #'   system.file("examples/01_hello", package = "shiny"),
     #'   options = list(shiny.trace = TRUE)
     #' )
-    #' app$get_logs()
+    #'
+    #' app2$get_logs()
     #' ## (All WebSocket messages have been replaced with `WEBSOCKET_MSG` in example below)
-    #' # \{shinytest2\} R  info      11:09:57.43 Start AppDriver initialization
-    #' # \{shinytest2\} R  info      11:09:57.43 Starting Shiny app
-    #' # \{shinytest2\} R  info      11:09:58.27 Creating new chromote session
-    #' # \{shinytest2\} R  info      11:09:58.40 Navigating to Shiny app
-    #' # \{shinytest2\} R  info      11:09:58.53 Injecting shiny-tracer.js
-    #' # \{chromote\}   JS info      11:09:58.53 shinytest2; jQuery not found
-    #' # \{chromote\}   JS info      11:09:58.53 shinytest2; Loaded
-    #' # \{shinytest2\} R  info      11:09:58.54 Waiting until Shiny app starts
-    #' # \{chromote\}   JS info      11:09:58.61 shinytest2; jQuery found
-    #' # \{chromote\}   JS info      11:09:58.61 shinytest2; Waiting for shiny session to connect
-    #' # \{chromote\}   JS websocket 11:09:58.73 send WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:58.78 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS info      11:09:58.78 shinytest2; Connected
-    #' # \{chromote\}   JS info      11:09:58.78 shinytest2; Ready
-    #' # \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS info      11:09:58.85 shinytest2; shiny:busy
-    #' # \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-    #' # \{shinytest2\} R  info      11:09:58.87 Shiny app started
-    #' # \{shinytest2\} R  info      11:09:59.07 Setting inputs: 'bins'
-    #' # \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS info      11:09:59.08 shinytest2; shiny:idle
-    #' # \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS info      11:09:59.08 shinytest2; shiny:value distPlot
-    #' # \{chromote\}   JS info      11:09:59.08 shinytest2; inputQueue: adding bins
-    #' # \{chromote\}   JS info      11:09:59.09 shinytest2; inputQueue: flushing bins
-    #' # \{chromote\}   JS websocket 11:09:59.10 send WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS info      11:09:59.11 shinytest2; shiny:busy
-    #' # \{chromote\}   JS websocket 11:09:59.12 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.14 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.18 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.19 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS info      11:09:59.19 shinytest2; shiny:idle
-    #' # \{chromote\}   JS websocket 11:09:59.21 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS info      11:09:59.21 shinytest2; shiny:value distPlot
-    #' # \{shinytest2\} R  info      11:09:59.21 Finished setting inputs. Timedout: FALSE
-    #' # \{shinytest2\} R  info      11:09:59.21 Getting all values
-    #' # \{shiny\}      R  error     ----------- Loading required package: shiny
-    #' # \{shiny\}      R  error     ----------- Running application in test mode.
-    #' # \{shiny\}      R  error     -----------
-    #' # \{shiny\}      R  error     ----------- Listening on http://127.0.0.1:1505
-    #' # \{shiny\}      R  error     ----------- SEND \{"config":\{"workerId":"","sessionId":|truncated
-    #' # \{shiny\}      R  error     ----------- RECV \{"method":"init","data":\{"bins":30,|truncated
-    #' # \{shiny\}      R  error     ----------- SEND \{"custom":\{"showcase-src":\{"srcref"|truncated
-    #' # \{shiny\}      R  error     ----------- SEND \{"busy":"busy"\}
-    #' # \{shiny\}      R  error     ----------- SEND \{"custom":\{"showcase-src":\{"srcref"|truncated
-    #' # \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-    #' # \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-    #' # \{shiny\}      R  error     ----------- SEND \{"busy":"idle"\}
-    #' # \{shiny\}      R  error     ----------- SEND \{"errors":\{\},"values":\{"distPlot"|truncated
-    #' # \{shiny\}      R  error     ----------- RECV \{"method":"update","data":\{"bins":20\}\}
-    #' # \{shiny\}      R  error     ----------- SEND \{"progress":\{"type":"binding",|truncated
-    #' # \{shiny\}      R  error     ----------- SEND \{"busy":"busy"\}
-    #' # \{shiny\}      R  error     ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
-    #' # \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-    #' # \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-    #' # \{shiny\}      R  error     ----------- SEND \{"busy":"idle"\}
-    #' # \{shiny\}      R  error     ----------- SEND \{"errors":\{\},"values":\{"distPlot"|truncated
+    #' #> \{shinytest2\} R  info      10:01:57.49 Start AppDriver initialization
+    #' #> \{shinytest2\} R  info      10:01:57.50 Starting Shiny app
+    #' #> \{shinytest2\} R  info      10:01:58.20 Creating new ChromoteSession
+    #' #> \{shinytest2\} R  info      10:01:58.35 Navigating to Shiny app
+    #' #> \{shinytest2\} R  info      10:01:58.47 Injecting shiny-tracer.js
+    #' #> \{chromote\}   JS info      10:01:58.49 shinytest2; jQuery not found
+    #' #> \{chromote\}   JS info      10:01:58.49 shinytest2; Loaded
+    #' #> \{shinytest2\} R  info      10:01:58.50 Waiting for Shiny to become ready
+    #' #> \{chromote\}   JS info      10:01:58.55 shinytest2; jQuery found
+    #' #> \{chromote\}   JS info      10:01:58.55 shinytest2; Waiting for shiny session to connect
+    #' #> \{chromote\}   JS websocket 10:01:58.64 send WEBSOCKET_MSG
+    #' #> \{chromote\}   JS websocket 10:01:58.67 recv WEBSOCKET_MSG
+    #' #> \{chromote\}   JS info      10:01:58.67 shinytest2; Connected
+    #' #> \{chromote\}   JS websocket 10:01:58.71 recv WEBSOCKET_MSG
+    #' #> \{chromote\}   JS websocket 10:01:58.72 recv WEBSOCKET_MSG
+    #' #> \{chromote\}   JS info      10:01:58.72 shinytest2; shiny:busy
+    #' #> \{chromote\}   JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+    #' #> \{chromote\}   JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+    #' #> \{shinytest2\} R  info      10:01:58.75 Waiting for Shiny to become idle for 200ms within 15000ms
+    #' #> \{chromote\}   JS info      10:01:58.75 shinytest2; Waiting for Shiny to be stable
+    #' #> \{chromote\}   JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+    #' #> \{chromote\}   JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+    #' #> \{chromote\}   JS info      10:01:58.81 shinytest2; shiny:idle
+    #' #> \{chromote\}   JS websocket 10:01:58.82 recv WEBSOCKET_MSG
+    #' #> \{chromote\}   JS info      10:01:58.82 shinytest2; shiny:value distPlot
+    #' #> \{chromote\}   JS info      10:01:59.01 shinytest2; Shiny has been idle for 200ms
+    #' #> \{shinytest2\} R  info      10:01:59.01 Shiny app started
+    #' #> \{shiny\}      R  stderr    ----------- Loading required package: shiny
+    #' #> \{shiny\}      R  stderr    ----------- Running application in test mode.
+    #' #> \{shiny\}      R  stderr    -----------
+    #' #> \{shiny\}      R  stderr    ----------- Listening on http://127.0.0.1:4560
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"config":\{"workerId":"","sessionId"|truncated
+    #' #> \{shiny\}      R  stderr    ----------- RECV \{"method":"init","data":\{"bins":30,|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"busy":"busy"\}
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"busy":"idle"\}
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"errors":\{\},"values":\{"distPlot":|truncated
     #'
     #' # The log that is returned is a `data.frame()`.
-    #' log <- app$get_logs()
+    #' log <- app2$get_logs()
     #' tibble::glimpse(log)
+    #' #> Rows: 43
+    #' #> Columns: 5
+    #' #> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+    #' #> $ timestamp <dttm> 2022-09-19 10:01:57, 2022-09-19 10:01:57, 2022-09-19 10:01:58, 2022…
+    #' #> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shinytest2"…
+    #' #> $ level     <chr> "info", "info", "info", "info", "info", "info", "info", "info", "inf…
+    #' #> $ message   <chr> "Start AppDriver initialization", "Starting Shiny app", "Creating ne…
     #' #> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
     #' #> $ timestamp <dttm> 2022-03-16 11:09:57, 2022-03-16 11:09:57, 2022-03-16 11:09:…
     #' #> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shi…
@@ -1526,23 +1632,15 @@ AppDriver <- R6Class( # nolint
     #' # It may be filtered to find desired logs
     #' subset(log, level == "websocket")
     #' ## (All WebSocket messages have been replaced with `WEBSOCKET_MSG` in example below)
-    #' # \{chromote\}   JS websocket 11:09:58.73 send WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:58.78 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.10 send WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.12 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.14 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.18 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.19 recv WEBSOCKET_MSG
-    #' # \{chromote\}   JS websocket 11:09:59.21 recv WEBSOCKET_MSG
+    #' #> \{chromote\} JS websocket 10:01:58.64 send WEBSOCKET_MSG
+    #' #> \{chromote\} JS websocket 10:01:58.67 recv WEBSOCKET_MSG
+    #' #> \{chromote\} JS websocket 10:01:58.71 recv WEBSOCKET_MSG
+    #' #> \{chromote\} JS websocket 10:01:58.72 recv WEBSOCKET_MSG
+    #' #> \{chromote\} JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+    #' #> \{chromote\} JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+    #' #> \{chromote\} JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+    #' #> \{chromote\} JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+    #' #> \{chromote\} JS websocket 10:01:58.82 recv WEBSOCKET_MSG
     #' }
     get_logs = function() {
       app_get_logs(self, private)
@@ -1555,6 +1653,7 @@ AppDriver <- R6Class( # nolint
     #' \dontrun{
     #' app_path <- system.file("examples/01_hello", package = "shiny")
     #' app <- AppDriver$new(app_path)
+    #'
     #' app$log_message("Setting bins to smaller value")
     #' app$set_inputs(bins = 10)
     #' app$get_logs()
@@ -1578,6 +1677,11 @@ AppDriver <- R6Class( # nolint
     #' Typically, this can be paired with a button that when clicked will call
     #' `shiny::stopApp(info)` to return `info` from the test app back to the
     #' main R session.
+    #' @param signal_timeout Milliseconds to wait between sending a `SIGINT`,
+    #'   `SIGTERM`, and `SIGKILL` to the Shiny process. Defaults to 500ms and does
+    #'   not utilize the resolved value from `AppDriver$new(timeout=)`. However,
+    #'   if \pkg{covr} is currently executing, then the `timeout` is set to
+    #'   20,000ms to allow for the coverage report to be generated.
     #' @return The result of the background process if the Shiny application has
     #'   already been terminated.
     #' @examples
@@ -1604,6 +1708,7 @@ AppDriver <- R6Class( # nolint
     #'   # Enable reactlog in background R session
     #'   options = list(shiny.reactlog = TRUE)
     #' )
+    #'
     #' app$click("button")
     #' rlog <- app$stop()
     #' str(head(rlog, 2))
@@ -1627,8 +1732,8 @@ AppDriver <- R6Class( # nolint
     #' #> ..$ session: chr "bdc7417f2fc8c84fc05c9518e36fdc44"
     #' #> ..$ time   : num 1.65e+09
     #' }
-    stop = function() {
-      app_stop(self, private)
+    stop = function(signal_timeout = missing_arg()) {
+      app_stop(self, private, signal_timeout = signal_timeout)
     }
   )
 )

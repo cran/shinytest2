@@ -74,8 +74,8 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 #    }
 #  )
 
-## ----echo=FALSE, out.width='100%', fig.align='center'-------------------------
-#  knitr::include_graphics("images/screenshot-exports-app.png")
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+knitr::include_graphics("images/screenshot-exports-app.png")
 
 ## -----------------------------------------------------------------------------
 #      exportTestValues(
@@ -90,8 +90,8 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ## -----------------------------------------------------------------------------
 #  Sys.sleep(0.5)
 
-## ----echo=FALSE, out.width='100%', fig.align='center'-------------------------
-#  knitr::include_graphics("images/screenshot-recorder-random-seed.png")
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+knitr::include_graphics("images/screenshot-recorder-random-seed.png")
 
 ## -----------------------------------------------------------------------------
 #  app <- AppDriver$new(seed = 4323)

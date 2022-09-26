@@ -23,11 +23,11 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 #  library(shinytest2)
 #  record_test("simple-app/")
 
-## ----echo=FALSE, out.width='100%', fig.align='center'-------------------------
-#  knitr::include_graphics("images/record-simple-app.png")
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+knitr::include_graphics("images/record-simple-app.png")
 
-## ----echo=FALSE, out.width='100%', fig.align='center'-------------------------
-#  knitr::include_graphics("images/record-simple-app-2.png")
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+knitr::include_graphics("images/record-simple-app-2.png")
 
 ## -----------------------------------------------------------------------------
 #  # File: tests/testthat/test-shinytest2.R
@@ -43,11 +43,11 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ## -----------------------------------------------------------------------------
 #  test_app("simple-app", filter = "shinytest2")
 
-## ----echo=FALSE, out.width='100%', fig.align='center'-------------------------
-#  knitr::include_graphics("images/diffviewer-1.png")
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+knitr::include_graphics("images/diffviewer-1.png")
 
-## ----echo=FALSE, out.width='100%', fig.align='center'-------------------------
-#  knitr::include_graphics("images/record-name.png")
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+knitr::include_graphics("images/record-name.png")
 
 ## -----------------------------------------------------------------------------
 #  rmarkdown::shiny_prerendered_clean("../doc.Rmd")

@@ -37,7 +37,7 @@ a \code{.Rprofile} file within your Shiny app directory.
 
 
 If the app throws an error during initialization, the \code{AppDriver} will
-will be stored in \code{rlang::last_error()$app}. This allows for the "failure
+be stored in \code{rlang::last_error()$app}. This allows for the "failure
 to initialize" to be signaled while also allowing for the \code{app} to be
 retrieved after any initialization error has been thrown.
 }
@@ -48,7 +48,7 @@ retrieved after any initialization error has been thrown.
 Reactive values from within your Shiny application can be exported using the
 method:
 \href{https://shiny.rstudio.com/reference/shiny/latest/exportTestValues.html}{\code{shiny::exportTestValues()}}.
-This under utilized method exposes internal values of your app
+This underutilized method exposes internal values of your app
 without needing to create a corresponding input value or output value.
 
 For example:
@@ -77,6 +77,7 @@ shiny_app <- shinyApp(
 )
 
 app <- AppDriver$new(shiny_app)
+
 init_vals <- app$get_values()
 str(init_vals)
 #> List of 3
@@ -180,6 +181,7 @@ cat(app$get_text("#view"))
 \dontrun{
 app_path <- system.file("examples/07_widgets", package = "shiny")
 app <- AppDriver$new(app_path)
+
 cat(app$get_text("#view"))
 app$set_inputs(dataset = "cars", obs = 6)
 app$click("update")
@@ -249,6 +251,7 @@ app$expect_values(input = "A", output = "C")
 \dontrun{
 app_path <- system.file("examples/04_mpg", package = "shiny")
 app <- AppDriver$new(app_path)
+
 # Retrieve a single value
 app$get_value(output = "caption")
 #> [1] "mpg ~ cyl"
@@ -378,6 +381,7 @@ app$get_text("h2")
 \dontrun{
 app_path <- system.file("examples/04_mpg", package = "shiny")
 app <- AppDriver$new(app_path)
+
 # Save a snapshot of the `caption` output
 app$expect_html("#caption")
 }
@@ -389,6 +393,7 @@ app$expect_html("#caption")
 \dontrun{
 app_path <- system.file("examples/03_reactivity", package = "shiny")
 app <- AppDriver$new(app_path, check_names = FALSE)
+
 app$set_inputs(caption = "Custom value!")
 cat(app$get_html(".shiny-input-container")[1])
 #> <div class="form-group shiny-input-container">
@@ -492,14 +497,52 @@ app$get_js(js_txt)
 ## ------------------------------------------------
 
 \dontrun{
+# These example lines should be performed in a `./tests/testthat`
+# test file so that snapshot files can be properly saved
+
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path, variant = platform_variant())
 
-# Expect a full size screenshot
+# Expect a full size screenshot to be pixel perfect
 app$expect_screenshot()
 
-# Very brittle test
+# Images are brittle when containing plots
 app$expect_screenshot(selector = "#distPlot")
+
+# Test with more threshold in pixel value differences
+# Helps with rounded corners
+app$expect_screenshot(threshold = 10)
+
+# Equivalent expectations
+app$expect_screenshot() # default
+app$expect_screenshot(threshold = NULL)
+app$expect_screenshot(compare = testthat::compare_file_binary)
+expect_snapshot_file(
+  app$get_screenshot(),
+  variant = app$get_variant(),
+  compare = testthat::compare_file_binary
+)
+
+# Equivalent expectations
+app$expect_screenshot(threshold = 3, kernel_size = 5)
+app$expect_screenshot(compare = function(old, new) {
+  compare_screenshot_threshold(
+    old, new,
+    threshold = 3,
+    kernel_size = 5
+  )
+})
+expect_screenshot_file(
+  app$get_screenshot(),
+  variant = app$get_variant(),
+  compare = function(old, new) {
+    compare_screenshot_threshold(
+      old, new,
+      threshold = 3,
+      kernel_size = 5
+    )
+  }
+)
 }
 
 ## ------------------------------------------------
@@ -510,10 +553,10 @@ app$expect_screenshot(selector = "#distPlot")
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
 
-# Display in viewer
+# Display in graphics device
 app$get_screenshot()
 
-# Update bins then display `"disPlot"` in viewer
+# Update bins then display `"disPlot"` in graphics device
 app$set_inputs(bins = 10)
 app$get_screenshot(selector = "#distPlot")
 
@@ -644,6 +687,7 @@ app <- AppDriver$new(shiny_app, check_names = TRUE)
 #> ! Shiny inputs should have unique HTML id values.
 #> i The following HTML id values are not unique:
 #> • text
+app$stop()
 
 # Manually assert that all names are unique
 app <- AppDriver$new(shiny_app, check_names = FALSE)
@@ -653,6 +697,7 @@ app$expect_unique_names()
 #> i The following HTML id values are not unique:
 #>   • text
 #> Class:   rlang_warning/warning/condition
+app$stop()
 }
 
 ## ------------------------------------------------
@@ -662,6 +707,7 @@ app$expect_unique_names()
 \dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 identical(app$get_dir(), app_path)
 #> [1] TRUE
 }
@@ -673,6 +719,7 @@ identical(app$get_dir(), app_path)
 \dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 browseURL(app$get_url())
 }
 
@@ -683,6 +730,7 @@ browseURL(app$get_url())
 \dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 app$get_window_size()
 #> $width
 #> [1] 992
@@ -724,6 +772,7 @@ app$get_window_size()
 \dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 b <- app$get_chromote_session()
 b$Runtime$evaluate("1 + 1")
 #> $result
@@ -745,6 +794,7 @@ b$Runtime$evaluate("1 + 1")
 app_path <- system.file("examples/01_hello", package = "shiny")
 
 app <- AppDriver$new(app_path)
+
 app$get_variant()
 #> NULL
 
@@ -758,103 +808,91 @@ app$get_variant()
 ## ------------------------------------------------
 
 \dontrun{
-app <- AppDriver$new(system.file("examples/01_hello", package = "shiny"))
-app$get_logs()
-# \{shinytest2\} R  info  11:15:20.11 Start AppDriver initialization
-# \{shinytest2\} R  info  11:15:20.11 Starting Shiny app
-# \{shinytest2\} R  info  11:15:20.99 Creating new chromote session
-# \{shinytest2\} R  info  11:15:21.14 Navigating to Shiny app
-# \{shinytest2\} R  info  11:15:21.27 Injecting shiny-tracer.js
-# \{chromote\}   JS info  11:15:21.28 shinytest2; jQuery not found
-# \{chromote\}   JS info  11:15:21.28 shinytest2; Loaded
-# \{shinytest2\} R  info  11:15:21.28 Waiting until Shiny app starts
-# \{chromote\}   JS info  11:15:21.35 shinytest2; jQuery found
-# \{chromote\}   JS info  11:15:21.35 shinytest2; Waiting for shiny session to connect
-# \{chromote\}   JS info  11:15:21.57 shinytest2; Connected
-# \{chromote\}   JS info  11:15:21.57 shinytest2; Ready
-# \{chromote\}   JS info  11:15:21.65 shinytest2; shiny:busy
-# \{shinytest2\} R  info  11:15:21.65 Shiny app started
-# \{chromote\}   JS info  11:15:21.88 shinytest2; shiny:idle
-# \{chromote\}   JS info  11:15:21.88 shinytest2; shiny:value distPlot
-# \{shiny\}      R  error ----------- Loading required package: shiny
-# \{shiny\}      R  error ----------- Running application in test mode.
-# \{shiny\}      R  error -----------
-# \{shiny\}      R  error ----------- Listening on http://127.0.0.1:42558
+app1 <- AppDriver$new(system.file("examples/01_hello", package = "shiny"))
+
+app1$get_logs()
+#> \{shinytest2\} R  info   10:00:28.86 Start AppDriver initialization
+#> \{shinytest2\} R  info   10:00:28.86 Starting Shiny app
+#> \{shinytest2\} R  info   10:00:29.76 Creating new ChromoteSession
+#> \{shinytest2\} R  info   10:00:30.56 Navigating to Shiny app
+#> \{shinytest2\} R  info   10:00:30.70 Injecting shiny-tracer.js
+#> \{chromote\}   JS info   10:00:30.75 shinytest2; jQuery found
+#> \{chromote\}   JS info   10:00:30.77 shinytest2; Waiting for shiny session to connect
+#> \{chromote\}   JS info   10:00:30.77 shinytest2; Loaded
+#> \{shinytest2\} R  info   10:00:30.77 Waiting for Shiny to become ready
+#> \{chromote\}   JS info   10:00:30.90 shinytest2; Connected
+#> \{chromote\}   JS info   10:00:30.95 shinytest2; shiny:busy
+#> \{shinytest2\} R  info   10:00:30.98 Waiting for Shiny to become idle for 200ms within 15000ms
+#> \{chromote\}   JS info   10:00:30.98 shinytest2; Waiting for Shiny to be stable
+#> \{chromote\}   JS info   10:00:31.37 shinytest2; shiny:idle
+#> \{chromote\}   JS info   10:00:31.38 shinytest2; shiny:value distPlot
+#> \{chromote\}   JS info   10:00:31.57 shinytest2; Shiny has been idle for 200ms
+#> \{shinytest2\} R  info   10:00:31.57 Shiny app started
+#> \{shiny\}      R  stderr ----------- Loading required package: shiny
+#> \{shiny\}      R  stderr ----------- Running application in test mode.
+#> \{shiny\}      R  stderr -----------
+#> \{shiny\}      R  stderr ----------- Listening on http://127.0.0.1:4679
 
 
 # To capture all websocket traffic, set `options = list(shiny.trace = TRUE)`
-app <- AppDriver$new(
+app2 <- AppDriver$new(
   system.file("examples/01_hello", package = "shiny"),
   options = list(shiny.trace = TRUE)
 )
-app$get_logs()
+
+app2$get_logs()
 ## (All WebSocket messages have been replaced with `WEBSOCKET_MSG` in example below)
-# \{shinytest2\} R  info      11:09:57.43 Start AppDriver initialization
-# \{shinytest2\} R  info      11:09:57.43 Starting Shiny app
-# \{shinytest2\} R  info      11:09:58.27 Creating new chromote session
-# \{shinytest2\} R  info      11:09:58.40 Navigating to Shiny app
-# \{shinytest2\} R  info      11:09:58.53 Injecting shiny-tracer.js
-# \{chromote\}   JS info      11:09:58.53 shinytest2; jQuery not found
-# \{chromote\}   JS info      11:09:58.53 shinytest2; Loaded
-# \{shinytest2\} R  info      11:09:58.54 Waiting until Shiny app starts
-# \{chromote\}   JS info      11:09:58.61 shinytest2; jQuery found
-# \{chromote\}   JS info      11:09:58.61 shinytest2; Waiting for shiny session to connect
-# \{chromote\}   JS websocket 11:09:58.73 send WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.78 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:58.78 shinytest2; Connected
-# \{chromote\}   JS info      11:09:58.78 shinytest2; Ready
-# \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:58.85 shinytest2; shiny:busy
-# \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-# \{shinytest2\} R  info      11:09:58.87 Shiny app started
-# \{shinytest2\} R  info      11:09:59.07 Setting inputs: 'bins'
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.08 shinytest2; shiny:idle
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.08 shinytest2; shiny:value distPlot
-# \{chromote\}   JS info      11:09:59.08 shinytest2; inputQueue: adding bins
-# \{chromote\}   JS info      11:09:59.09 shinytest2; inputQueue: flushing bins
-# \{chromote\}   JS websocket 11:09:59.10 send WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.11 shinytest2; shiny:busy
-# \{chromote\}   JS websocket 11:09:59.12 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.14 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.18 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.19 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.19 shinytest2; shiny:idle
-# \{chromote\}   JS websocket 11:09:59.21 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.21 shinytest2; shiny:value distPlot
-# \{shinytest2\} R  info      11:09:59.21 Finished setting inputs. Timedout: FALSE
-# \{shinytest2\} R  info      11:09:59.21 Getting all values
-# \{shiny\}      R  error     ----------- Loading required package: shiny
-# \{shiny\}      R  error     ----------- Running application in test mode.
-# \{shiny\}      R  error     -----------
-# \{shiny\}      R  error     ----------- Listening on http://127.0.0.1:1505
-# \{shiny\}      R  error     ----------- SEND \{"config":\{"workerId":"","sessionId":|truncated
-# \{shiny\}      R  error     ----------- RECV \{"method":"init","data":\{"bins":30,|truncated
-# \{shiny\}      R  error     ----------- SEND \{"custom":\{"showcase-src":\{"srcref"|truncated
-# \{shiny\}      R  error     ----------- SEND \{"busy":"busy"\}
-# \{shiny\}      R  error     ----------- SEND \{"custom":\{"showcase-src":\{"srcref"|truncated
-# \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"busy":"idle"\}
-# \{shiny\}      R  error     ----------- SEND \{"errors":\{\},"values":\{"distPlot"|truncated
-# \{shiny\}      R  error     ----------- RECV \{"method":"update","data":\{"bins":20\}\}
-# \{shiny\}      R  error     ----------- SEND \{"progress":\{"type":"binding",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"busy":"busy"\}
-# \{shiny\}      R  error     ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
-# \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"busy":"idle"\}
-# \{shiny\}      R  error     ----------- SEND \{"errors":\{\},"values":\{"distPlot"|truncated
+#> \{shinytest2\} R  info      10:01:57.49 Start AppDriver initialization
+#> \{shinytest2\} R  info      10:01:57.50 Starting Shiny app
+#> \{shinytest2\} R  info      10:01:58.20 Creating new ChromoteSession
+#> \{shinytest2\} R  info      10:01:58.35 Navigating to Shiny app
+#> \{shinytest2\} R  info      10:01:58.47 Injecting shiny-tracer.js
+#> \{chromote\}   JS info      10:01:58.49 shinytest2; jQuery not found
+#> \{chromote\}   JS info      10:01:58.49 shinytest2; Loaded
+#> \{shinytest2\} R  info      10:01:58.50 Waiting for Shiny to become ready
+#> \{chromote\}   JS info      10:01:58.55 shinytest2; jQuery found
+#> \{chromote\}   JS info      10:01:58.55 shinytest2; Waiting for shiny session to connect
+#> \{chromote\}   JS websocket 10:01:58.64 send WEBSOCKET_MSG
+#> \{chromote\}   JS websocket 10:01:58.67 recv WEBSOCKET_MSG
+#> \{chromote\}   JS info      10:01:58.67 shinytest2; Connected
+#> \{chromote\}   JS websocket 10:01:58.71 recv WEBSOCKET_MSG
+#> \{chromote\}   JS websocket 10:01:58.72 recv WEBSOCKET_MSG
+#> \{chromote\}   JS info      10:01:58.72 shinytest2; shiny:busy
+#> \{chromote\}   JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+#> \{chromote\}   JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+#> \{shinytest2\} R  info      10:01:58.75 Waiting for Shiny to become idle for 200ms within 15000ms
+#> \{chromote\}   JS info      10:01:58.75 shinytest2; Waiting for Shiny to be stable
+#> \{chromote\}   JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+#> \{chromote\}   JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+#> \{chromote\}   JS info      10:01:58.81 shinytest2; shiny:idle
+#> \{chromote\}   JS websocket 10:01:58.82 recv WEBSOCKET_MSG
+#> \{chromote\}   JS info      10:01:58.82 shinytest2; shiny:value distPlot
+#> \{chromote\}   JS info      10:01:59.01 shinytest2; Shiny has been idle for 200ms
+#> \{shinytest2\} R  info      10:01:59.01 Shiny app started
+#> \{shiny\}      R  stderr    ----------- Loading required package: shiny
+#> \{shiny\}      R  stderr    ----------- Running application in test mode.
+#> \{shiny\}      R  stderr    -----------
+#> \{shiny\}      R  stderr    ----------- Listening on http://127.0.0.1:4560
+#> \{shiny\}      R  stderr    ----------- SEND \{"config":\{"workerId":"","sessionId"|truncated
+#> \{shiny\}      R  stderr    ----------- RECV \{"method":"init","data":\{"bins":30,|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"busy":"busy"\}
+#> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"busy":"idle"\}
+#> \{shiny\}      R  stderr    ----------- SEND \{"errors":\{\},"values":\{"distPlot":|truncated
 
 # The log that is returned is a `data.frame()`.
-log <- app$get_logs()
+log <- app2$get_logs()
 tibble::glimpse(log)
+#> Rows: 43
+#> Columns: 5
+#> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ timestamp <dttm> 2022-09-19 10:01:57, 2022-09-19 10:01:57, 2022-09-19 10:01:58, 2022…
+#> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shinytest2"…
+#> $ level     <chr> "info", "info", "info", "info", "info", "info", "info", "info", "inf…
+#> $ message   <chr> "Start AppDriver initialization", "Starting Shiny app", "Creating ne…
 #> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
 #> $ timestamp <dttm> 2022-03-16 11:09:57, 2022-03-16 11:09:57, 2022-03-16 11:09:…
 #> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shi…
@@ -864,23 +902,15 @@ tibble::glimpse(log)
 # It may be filtered to find desired logs
 subset(log, level == "websocket")
 ## (All WebSocket messages have been replaced with `WEBSOCKET_MSG` in example below)
-# \{chromote\}   JS websocket 11:09:58.73 send WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.78 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.10 send WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.12 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.14 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.18 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.19 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.21 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.64 send WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.67 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.71 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.72 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.82 recv WEBSOCKET_MSG
 }
 
 ## ------------------------------------------------
@@ -890,6 +920,7 @@ subset(log, level == "websocket")
 \dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 app$log_message("Setting bins to smaller value")
 app$set_inputs(bins = 10)
 app$get_logs()
@@ -922,6 +953,7 @@ app <- AppDriver$new(
   # Enable reactlog in background R session
   options = list(shiny.reactlog = TRUE)
 )
+
 app$click("button")
 rlog <- app$stop()
 str(head(rlog, 2))
@@ -998,7 +1030,8 @@ Initialize an \code{AppDriver} object
   name = NULL,
   variant = missing_arg(),
   seed = NULL,
-  load_timeout = NULL,
+  load_timeout = missing_arg(),
+  timeout = missing_arg(),
   wait = TRUE,
   screenshot_args = missing_arg(),
   expect_values_screenshot_args = TRUE,
@@ -1016,11 +1049,20 @@ Initialize an \code{AppDriver} object
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{app_dir}}{Directory containing your Shiny application or a run-time
-Shiny R Markdown document. By default, it retrieves
-\code{test_path("../../")} to allow for interactive and testing usage. A
-Shiny application URL can be provided, however snapshots will be saved
-in the current directory.}
+\item{\code{app_dir}}{This value can be many different things:
+\itemize{
+\item A directory containing your Shiny application or a run-time Shiny R
+Markdown document.
+\item A URL pointing to your shiny application. (Don't forget to set
+\code{testmode = TRUE} when running your application!)
+\item A Shiny application object which inherits from \code{"shiny.appobj"}.
+}
+
+By default, \code{app_dir} is set to \code{test_path("../../")} to work in both
+interactive and testing usage.
+
+If a file path is not provided to \code{app_dir}, snapshots will be saved as
+if the root of the Shiny application was the current directory.}
 
 \item{\code{...}}{Must be empty. Allows for parameter expansion.}
 
@@ -1045,8 +1087,24 @@ For apps that use R's random number generator, this can make their
 behavior repeatable.}
 
 \item{\code{load_timeout}}{How long to wait for the app to load, in ms.
-This includes the time to start R. Defaults to 10s when running
-locally and 20s when running on CI.}
+This includes the time to start R. Defaults to 15s.
+
+If \code{load_timeout} is missing, the first numeric value found will be used:
+\itemize{
+\item R option \code{options(shinytest2.load_timeout=)}
+\item System environment variable \code{SHINYTEST2_LOAD_TIMEOUT}
+\item \code{15 * 1000} (15 seconds)
+}}
+
+\item{\code{timeout}}{Default number of milliseconds for any \code{timeout} or
+\code{timeout_} parameter in the \code{AppDriver} class. Defaults to 4s.
+
+If \code{timeout} is missing, the first numeric value found will be used:
+\itemize{
+\item R option \code{options(shinytest2.timeout=)}
+\item System environment variable \code{SHINYTEST2_TIMEOUT}
+\item \code{4 * 1000} (4 seconds)
+}}
 
 \item{\code{wait}}{If \code{TRUE}, \verb{$wait_for_idle(duration = 200, timeout = load_timeout)}
 will be called once the app has connected a new session, blocking until the
@@ -1201,7 +1259,7 @@ not return until an output value has been updated.
 \if{html}{\out{<div class="r">}}\preformatted{AppDriver$set_inputs(
   ...,
   wait_ = TRUE,
-  timeout_ = 3 * 1000,
+  timeout_ = missing_arg(),
   allow_no_input_binding_ = FALSE,
   priority_ = c("input", "event")
 )}\if{html}{\out{</div>}}
@@ -1215,7 +1273,8 @@ Input with name \code{component_name_1} will be assigned value \code{value_1}.}
 
 \item{\code{wait_}}{Wait until all reactive updates have completed?}
 
-\item{\code{timeout_}}{Amount of time to wait before giving up (milliseconds).}
+\item{\code{timeout_}}{Amount of time to wait before giving up (milliseconds).
+Defaults to the resolved \code{timeout} value during the \code{AppDriver} initialization.}
 
 \item{\code{allow_no_input_binding_}}{When setting the value of an input, allow
 it to set the value of an input even if that input does not have an
@@ -1232,6 +1291,7 @@ a \pkg{plotly} plot.}
 \preformatted{\dontrun{
 app_path <- system.file("examples/07_widgets", package = "shiny")
 app <- AppDriver$new(app_path)
+
 cat(app$get_text("#view"))
 app$set_inputs(dataset = "cars", obs = 6)
 app$click("update")
@@ -1251,7 +1311,7 @@ Upload a file
 
 Uploads a file to the specified file input.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AppDriver$upload_file(..., wait_ = TRUE, timeout_ = 3 * 1000)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AppDriver$upload_file(..., wait_ = TRUE, timeout_ = missing_arg())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1262,7 +1322,8 @@ Uploads a file to the specified file input.
 
 \item{\code{wait_}}{Wait until all reactive updates have completed?}
 
-\item{\code{timeout_}}{Amount of time to wait before giving up (milliseconds).}
+\item{\code{timeout_}}{Amount of time to wait before giving up (milliseconds).
+Defaults to the resolved \code{timeout} value during the \code{AppDriver} initialization.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1438,6 +1499,7 @@ The requested \code{input}, \code{output}, or \code{export} value.
 \preformatted{\dontrun{
 app_path <- system.file("examples/04_mpg", package = "shiny")
 app <- AppDriver$new(app_path)
+
 # Retrieve a single value
 app$get_value(output = "caption")
 #> [1] "mpg ~ cyl"
@@ -1645,7 +1707,7 @@ Location logic:
 \item If a \href{https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition}{\code{content-disposition} \code{filename}} is provided,
 then a temp file containing this \code{filename} will be
 returned.
-\item Otherwise, a tempfile ending in \code{.download} will be returned.
+\item Otherwise, a temp file ending in \code{.download} will be returned.
 }
 }
 \subsection{Examples}{
@@ -1802,6 +1864,7 @@ because they often rely on minor details of dependencies.}
 \preformatted{\dontrun{
 app_path <- system.file("examples/04_mpg", package = "shiny")
 app <- AppDriver$new(app_path)
+
 # Save a snapshot of the `caption` output
 app$expect_html("#caption")
 }
@@ -1848,6 +1911,7 @@ If \code{FALSE}, the full DOM structure of the child elements will be returned (
 \preformatted{\dontrun{
 app_path <- system.file("examples/03_reactivity", package = "shiny")
 app <- AppDriver$new(app_path, check_names = FALSE)
+
 app$set_inputs(caption = "Custom value!")
 cat(app$get_html(".shiny-input-container")[1])
 #> <div class="form-group shiny-input-container">
@@ -1877,7 +1941,7 @@ Once the \code{script} has executed, the JSON result will be saved to a snapshot
   script = missing_arg(),
   ...,
   file = missing_arg(),
-  timeout = 15 * 1000,
+  timeout = missing_arg(),
   pre_snapshot = NULL,
   cran = FALSE
 )}\if{html}{\out{</div>}}
@@ -1892,7 +1956,8 @@ Once the \code{script} has executed, the JSON result will be saved to a snapshot
 
 \item{\code{file}}{A file containing JavaScript code to be read and used as the \code{script}. Only one of \code{script} or \code{file} can be specified.}
 
-\item{\code{timeout}}{Amount of time to wait before giving up (milliseconds).}
+\item{\code{timeout}}{Amount of time to wait before giving up (milliseconds).
+Defaults to the resolved \code{timeout} value during the \code{AppDriver} initialization.}
 
 \item{\code{pre_snapshot}}{A function to be called on the result of the script before taking the snapshot.
 \verb{$expect_html()} and \verb{$expect_text()} both use \code{\link[=unlist]{unlist()}}.}
@@ -1947,7 +2012,7 @@ avoid having to double all \verb{\{} and \verb{\}}.
   script = missing_arg(),
   ...,
   file = missing_arg(),
-  timeout = 15 * 1000
+  timeout = missing_arg()
 )}\if{html}{\out{</div>}}
 }
 
@@ -1963,7 +2028,8 @@ the value.}
 \item{\code{file}}{A (local) file containing JavaScript code to be read and used
 as the \code{script}. Only one of \code{script} or \code{file} can be specified.}
 
-\item{\code{timeout}}{Amount of time to wait before giving up (milliseconds).}
+\item{\code{timeout}}{Amount of time to wait before giving up (milliseconds).
+Defaults to the resolved \code{timeout} value during the \code{AppDriver} initialization.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2033,7 +2099,7 @@ The final result of the code will be ignored and not returned to the R session.
   script = missing_arg(),
   ...,
   file = missing_arg(),
-  timeout = 15 * 1000
+  timeout = missing_arg()
 )}\if{html}{\out{</div>}}
 }
 
@@ -2047,7 +2113,8 @@ The final result of the code will be ignored and not returned to the R session.
 \item{\code{file}}{A (local) file containing JavaScript code to be read and used
 as the \code{script}. Only one of \code{script} or \code{file} can be specified.}
 
-\item{\code{timeout}}{Amount of time to wait before giving up (milliseconds).}
+\item{\code{timeout}}{Amount of time to wait before giving up (milliseconds).
+Defaults to the resolved \code{timeout} value during the \code{AppDriver} initialization.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2102,9 +2169,13 @@ recommended to use other expectation methods.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AppDriver$expect_screenshot(
   ...,
+  threshold = NULL,
+  kernel_size = 5,
   screenshot_args = missing_arg(),
   delay = missing_arg(),
   selector = missing_arg(),
+  compare = missing_arg(),
+  quiet = FALSE,
   name = NULL,
   cran = FALSE
 )}\if{html}{\out{</div>}}
@@ -2114,6 +2185,21 @@ recommended to use other expectation methods.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{...}}{Must be empty. Allows for parameter expansion.}
+
+\item{\code{threshold}}{Parameter supplied to \code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}}
+when using the default \code{compare} method. If the value of \code{threshold} is
+NULL\verb{, [}compare_screenshot_threshold()\verb{] will act like [}testthat::compare_file_binary\verb{]. However, if }threshold\verb{ is a positive number, it will be compared against the largest convolution value found if the two images fail a [}testthat::compare_file_binary`] comparison.
+
+Which value should I use? Threshold values values below 5 help deter
+false-positive screenshot comparisons (such as inconsistent rounded
+corners). Larger values in the 10s and 100s will help find \emph{real}
+changes. However, not all values are one size fits all and you will need
+to play with a threshold that fits your needs.}
+
+\item{\code{kernel_size}}{Parameter supplied to \code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}}
+when using the default \code{compare} method. The \code{kernel_size} represents the
+height and width of the convolution kernel applied to the pixel
+differences. This integer-like value should be relatively small.}
 
 \item{\code{screenshot_args}}{This named list of arguments is passed along to
 \code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. If missing, the
@@ -2130,14 +2216,29 @@ and \code{delay} will default to \code{"html"} and \code{0} respectively.
 If \code{FALSE} is provided, the parameter will be ignored and a
 screenshot will be taken with default behavior.}
 
-\item{\code{delay}}{The number of milliseconds to wait before taking the screenshot.
-This value can either be supplied as \code{delay} or \code{screenshot_args}'s delay
-slot. The \code{delay} parameter will have preference.}
+\item{\code{delay}}{The number of \strong{seconds} to wait before taking the screenshot.
+This value can be supplied as \code{delay} or \code{screenshot_args$delay}, with the
+\code{delay} parameter having preference.}
 
 \item{\code{selector}}{The selector is a CSS selector that will be used to select a
-portion of the page to be captured. This value can either be supplied as
-\code{selector} or \code{screenshot_args}'s selector slot. The \code{selector} parameter
-will have preference.}
+portion of the page to be captured. This value can be supplied as
+\code{selector} or \code{screenshot_args$selector}, with the \code{selector} parameter
+having preference.}
+
+\item{\code{compare}}{A function used to compare the screenshot snapshot files.
+The function should take two inputs, the paths to the \code{old} and \code{new}
+snapshot, and return either \code{TRUE} or \code{FALSE}.
+
+\code{compare} defaults to a function that wraps around
+\code{compare_screenshot_threshold(old, new, threshold = threshold, kernel_size = kernel_size, quiet = quiet)}. Note: if \code{threshold} is
+\code{NULL} (default), \code{compare} will behave as if
+\code{\link[testthat:expect_snapshot_file]{testthat::compare_file_binary()}} was provided, comparing the two
+images byte-by-byte.}
+
+\item{\code{quiet}}{Parameter supplied to \code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}}
+when using the default \code{compare} method. If \code{FALSE}, diagnostic
+information will be presented when the computed value is larger than a
+non-\code{NULL} \code{threshold} value.}
 
 \item{\code{name}}{The file name to be used for the snapshot. The file extension
 will overwritten to \code{.png}. By default, the \code{name} supplied to
@@ -2152,14 +2253,52 @@ because they often rely on minor details of dependencies.}
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
+# These example lines should be performed in a `./tests/testthat`
+# test file so that snapshot files can be properly saved
+
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path, variant = platform_variant())
 
-# Expect a full size screenshot
+# Expect a full size screenshot to be pixel perfect
 app$expect_screenshot()
 
-# Very brittle test
+# Images are brittle when containing plots
 app$expect_screenshot(selector = "#distPlot")
+
+# Test with more threshold in pixel value differences
+# Helps with rounded corners
+app$expect_screenshot(threshold = 10)
+
+# Equivalent expectations
+app$expect_screenshot() # default
+app$expect_screenshot(threshold = NULL)
+app$expect_screenshot(compare = testthat::compare_file_binary)
+expect_snapshot_file(
+  app$get_screenshot(),
+  variant = app$get_variant(),
+  compare = testthat::compare_file_binary
+)
+
+# Equivalent expectations
+app$expect_screenshot(threshold = 3, kernel_size = 5)
+app$expect_screenshot(compare = function(old, new) {
+  compare_screenshot_threshold(
+    old, new,
+    threshold = 3,
+    kernel_size = 5
+  )
+})
+expect_screenshot_file(
+  app$get_screenshot(),
+  variant = app$get_variant(),
+  compare = function(old, new) {
+    compare_screenshot_threshold(
+      old, new,
+      threshold = 3,
+      kernel_size = 5
+    )
+  }
+)
 }
 }
 \if{html}{\out{</div>}}
@@ -2207,14 +2346,14 @@ If the value is:
 If a \code{FALSE} value is provided, the parameter will be ignored and a
 screenshot will be taken with default behavior.}
 
-\item{\code{delay}}{The number of milliseconds to wait before taking the screenshot.
-This value can either be supplied as \code{delay} or \code{screenshot_args}'s delay
-slot. The \code{delay} parameter will have preference.}
+\item{\code{delay}}{The number of \strong{seconds} to wait before taking the screenshot.
+This value can be supplied as \code{delay} or \code{screenshot_args$delay}, with the
+\code{delay} parameter having preference.}
 
 \item{\code{selector}}{The selector is a CSS selector that will be used to select a
-portion of the page to be captured. This value can either be supplied as
-\code{selector} or \code{screenshot_args}'s selector slot. The \code{selector} parameter
-will have preference.}
+portion of the page to be captured. This value can be supplied as
+\code{selector} or \code{screenshot_args$selector}, with the \code{selector} parameter
+having preference.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2224,10 +2363,10 @@ will have preference.}
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
 
-# Display in viewer
+# Display in graphics device
 app$get_screenshot()
 
-# Update bins then display `"disPlot"` in viewer
+# Update bins then display `"disPlot"` in graphics device
 app$set_inputs(bins = 10)
 app$get_screenshot(selector = "#distPlot")
 
@@ -2264,7 +2403,7 @@ the application
 resizing the window.)
 }
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AppDriver$wait_for_idle(duration = 500, timeout = 30 * 1000)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AppDriver$wait_for_idle(duration = 500, timeout = missing_arg())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -2273,7 +2412,8 @@ resizing the window.)
 \item{\code{duration}}{How long Shiny must be idle (in ms) before unblocking the
 R session.}
 
-\item{\code{timeout}}{How often to check for the condition, in ms.}
+\item{\code{timeout}}{Amount of time to wait before giving up (milliseconds).
+Defaults to the resolved \code{timeout} value during the \code{AppDriver} initialization.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2338,7 +2478,7 @@ has finished processing a complex reactive situation.
   output = missing_arg(),
   export = missing_arg(),
   ignore = list(NULL, ""),
-  timeout = 15 * 1000,
+  timeout = missing_arg(),
   interval = 400
 )}\if{html}{\out{</div>}}
 }
@@ -2354,9 +2494,13 @@ Only one of these parameters may be used.}
 \item{\code{ignore}}{List of possible values to ignore when checking for
 updates.}
 
-\item{\code{timeout}}{How long to wait (in ms) before throwing an error.}
+\item{\code{timeout}}{Amount of time to wait before giving up (milliseconds).
+Defaults to the resolved \code{timeout} value during the \code{AppDriver} initialization.}
 
 \item{\code{interval}}{How often to check for the condition, in ms.}
+
+\item{\code{timeout_}}{Amount of time to wait for a new \code{output} value before giving up (milliseconds).
+Defaults to the resolved \code{timeout} value during the \code{AppDriver} initialization.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2421,7 +2565,7 @@ Wait for a JavaScript expression to be true
 Waits until a JavaScript \code{expr}ession evaluates to \code{true} or the
 \code{timeout} is exceeded.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AppDriver$wait_for_js(script, timeout = 30 * 1000, interval = 100)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AppDriver$wait_for_js(script, timeout = missing_arg(), interval = 100)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -2431,9 +2575,10 @@ Waits until a JavaScript \code{expr}ession evaluates to \code{true} or the
 eventually return a \href{https://developer.mozilla.org/en-US/docs/Glossary/Truthy}{\code{true}thy value} or a
 timeout error will be thrown.}
 
-\item{\code{timeout}}{How long the script has to return a \code{true}thy value, in ms.}
+\item{\code{timeout}}{How long the script has to return a \code{true}thy value (milliseconds).
+Defaults to the resolved \code{timeout} value during the \code{AppDriver} initialization.}
 
-\item{\code{interval}}{How often to check for the condition, in ms.}
+\item{\code{interval}}{How often to check for the condition (milliseconds).}
 }
 \if{html}{\out{</div>}}
 }
@@ -2500,6 +2645,7 @@ app <- AppDriver$new(shiny_app, check_names = TRUE)
 #> ! Shiny inputs should have unique HTML id values.
 #> i The following HTML id values are not unique:
 #> • text
+app$stop()
 
 # Manually assert that all names are unique
 app <- AppDriver$new(shiny_app, check_names = FALSE)
@@ -2509,6 +2655,7 @@ app$expect_unique_names()
 #> i The following HTML id values are not unique:
 #>   • text
 #> Class:   rlang_warning/warning/condition
+app$stop()
 }
 }
 \if{html}{\out{</div>}}
@@ -2535,6 +2682,7 @@ current directory will be returned.
 \preformatted{\dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 identical(app$get_dir(), app_path)
 #> [1] TRUE
 }
@@ -2561,6 +2709,7 @@ URL where the Shiny app is being hosted
 \preformatted{\dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 browseURL(app$get_url())
 }
 }
@@ -2586,6 +2735,7 @@ named \code{width} and \code{height}.
 \preformatted{\dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 app$get_window_size()
 #> $width
 #> [1] 992
@@ -2667,6 +2817,7 @@ Get the \code{\link{ChromoteSession}} object from the \pkg{chromote} package.
 \preformatted{\dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 b <- app$get_chromote_session()
 b$Runtime$evaluate("1 + 1")
 #> $result
@@ -2706,6 +2857,7 @@ no value was supplied.
 app_path <- system.file("examples/01_hello", package = "shiny")
 
 app <- AppDriver$new(app_path)
+
 app$get_variant()
 #> NULL
 
@@ -2726,13 +2878,6 @@ app$get_variant()
 Get all logs
 
 Retrieve all of the debug logs that have been recorded.
-There are a few standard debug types that may be used:
-\itemize{
-\item \code{"shiny_console"}: Displays the console messages from the Shiny server when \verb{$get_logs()} is called.
-\item \code{"browser"}: Displays the browser console messages when \verb{$get_logs()} is called.
-\item \code{"shinytest2"}: Displays the messages saved by the \code{window.shinytest2} object in the browser when \verb{$get_logs()} is called.
-\item \code{"ws_messages"}: Saves all messages sent by Shiny to the
-}
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AppDriver$get_logs()}\if{html}{\out{</div>}}
 }
@@ -2756,9 +2901,8 @@ for more details
 \item \code{level}: For a given location, there are different types of log levels.
 \itemize{
 \item \code{"shinytest2"}: \code{"log"}; Only log messages are captured.
-\item \code{"shiny"}: \code{"log"} or \code{"error"}; These two levels correspond to the
-\code{stdin} or \code{stdout} messages. Note, \code{message()} output is sent to
-\code{stderr} which is recorded as \code{"error"}.
+\item \code{"shiny"}: \code{"stdout"} or \code{"stderr"}; Note, \code{message()} output is sent
+to \code{stderr}.
 \item \code{"chromote"}: Correspond to any level of a JavaScript
 \code{console.LEVEL()} function call. Typically, these are "log"\code{and}"error"\verb{but can include}"info"\verb{, }"debug"\verb{, and }"warn"\verb{. If }options(shiny.trace = TRUE)\verb{, then the level will recorded as }"websocket"`.
 }
@@ -2767,103 +2911,91 @@ for more details
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
-app <- AppDriver$new(system.file("examples/01_hello", package = "shiny"))
-app$get_logs()
-# \{shinytest2\} R  info  11:15:20.11 Start AppDriver initialization
-# \{shinytest2\} R  info  11:15:20.11 Starting Shiny app
-# \{shinytest2\} R  info  11:15:20.99 Creating new chromote session
-# \{shinytest2\} R  info  11:15:21.14 Navigating to Shiny app
-# \{shinytest2\} R  info  11:15:21.27 Injecting shiny-tracer.js
-# \{chromote\}   JS info  11:15:21.28 shinytest2; jQuery not found
-# \{chromote\}   JS info  11:15:21.28 shinytest2; Loaded
-# \{shinytest2\} R  info  11:15:21.28 Waiting until Shiny app starts
-# \{chromote\}   JS info  11:15:21.35 shinytest2; jQuery found
-# \{chromote\}   JS info  11:15:21.35 shinytest2; Waiting for shiny session to connect
-# \{chromote\}   JS info  11:15:21.57 shinytest2; Connected
-# \{chromote\}   JS info  11:15:21.57 shinytest2; Ready
-# \{chromote\}   JS info  11:15:21.65 shinytest2; shiny:busy
-# \{shinytest2\} R  info  11:15:21.65 Shiny app started
-# \{chromote\}   JS info  11:15:21.88 shinytest2; shiny:idle
-# \{chromote\}   JS info  11:15:21.88 shinytest2; shiny:value distPlot
-# \{shiny\}      R  error ----------- Loading required package: shiny
-# \{shiny\}      R  error ----------- Running application in test mode.
-# \{shiny\}      R  error -----------
-# \{shiny\}      R  error ----------- Listening on http://127.0.0.1:42558
+app1 <- AppDriver$new(system.file("examples/01_hello", package = "shiny"))
+
+app1$get_logs()
+#> \{shinytest2\} R  info   10:00:28.86 Start AppDriver initialization
+#> \{shinytest2\} R  info   10:00:28.86 Starting Shiny app
+#> \{shinytest2\} R  info   10:00:29.76 Creating new ChromoteSession
+#> \{shinytest2\} R  info   10:00:30.56 Navigating to Shiny app
+#> \{shinytest2\} R  info   10:00:30.70 Injecting shiny-tracer.js
+#> \{chromote\}   JS info   10:00:30.75 shinytest2; jQuery found
+#> \{chromote\}   JS info   10:00:30.77 shinytest2; Waiting for shiny session to connect
+#> \{chromote\}   JS info   10:00:30.77 shinytest2; Loaded
+#> \{shinytest2\} R  info   10:00:30.77 Waiting for Shiny to become ready
+#> \{chromote\}   JS info   10:00:30.90 shinytest2; Connected
+#> \{chromote\}   JS info   10:00:30.95 shinytest2; shiny:busy
+#> \{shinytest2\} R  info   10:00:30.98 Waiting for Shiny to become idle for 200ms within 15000ms
+#> \{chromote\}   JS info   10:00:30.98 shinytest2; Waiting for Shiny to be stable
+#> \{chromote\}   JS info   10:00:31.37 shinytest2; shiny:idle
+#> \{chromote\}   JS info   10:00:31.38 shinytest2; shiny:value distPlot
+#> \{chromote\}   JS info   10:00:31.57 shinytest2; Shiny has been idle for 200ms
+#> \{shinytest2\} R  info   10:00:31.57 Shiny app started
+#> \{shiny\}      R  stderr ----------- Loading required package: shiny
+#> \{shiny\}      R  stderr ----------- Running application in test mode.
+#> \{shiny\}      R  stderr -----------
+#> \{shiny\}      R  stderr ----------- Listening on http://127.0.0.1:4679
 
 
 # To capture all websocket traffic, set `options = list(shiny.trace = TRUE)`
-app <- AppDriver$new(
+app2 <- AppDriver$new(
   system.file("examples/01_hello", package = "shiny"),
   options = list(shiny.trace = TRUE)
 )
-app$get_logs()
+
+app2$get_logs()
 ## (All WebSocket messages have been replaced with `WEBSOCKET_MSG` in example below)
-# \{shinytest2\} R  info      11:09:57.43 Start AppDriver initialization
-# \{shinytest2\} R  info      11:09:57.43 Starting Shiny app
-# \{shinytest2\} R  info      11:09:58.27 Creating new chromote session
-# \{shinytest2\} R  info      11:09:58.40 Navigating to Shiny app
-# \{shinytest2\} R  info      11:09:58.53 Injecting shiny-tracer.js
-# \{chromote\}   JS info      11:09:58.53 shinytest2; jQuery not found
-# \{chromote\}   JS info      11:09:58.53 shinytest2; Loaded
-# \{shinytest2\} R  info      11:09:58.54 Waiting until Shiny app starts
-# \{chromote\}   JS info      11:09:58.61 shinytest2; jQuery found
-# \{chromote\}   JS info      11:09:58.61 shinytest2; Waiting for shiny session to connect
-# \{chromote\}   JS websocket 11:09:58.73 send WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.78 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:58.78 shinytest2; Connected
-# \{chromote\}   JS info      11:09:58.78 shinytest2; Ready
-# \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:58.85 shinytest2; shiny:busy
-# \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-# \{shinytest2\} R  info      11:09:58.87 Shiny app started
-# \{shinytest2\} R  info      11:09:59.07 Setting inputs: 'bins'
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.08 shinytest2; shiny:idle
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.08 shinytest2; shiny:value distPlot
-# \{chromote\}   JS info      11:09:59.08 shinytest2; inputQueue: adding bins
-# \{chromote\}   JS info      11:09:59.09 shinytest2; inputQueue: flushing bins
-# \{chromote\}   JS websocket 11:09:59.10 send WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.11 shinytest2; shiny:busy
-# \{chromote\}   JS websocket 11:09:59.12 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.14 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.18 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.19 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.19 shinytest2; shiny:idle
-# \{chromote\}   JS websocket 11:09:59.21 recv WEBSOCKET_MSG
-# \{chromote\}   JS info      11:09:59.21 shinytest2; shiny:value distPlot
-# \{shinytest2\} R  info      11:09:59.21 Finished setting inputs. Timedout: FALSE
-# \{shinytest2\} R  info      11:09:59.21 Getting all values
-# \{shiny\}      R  error     ----------- Loading required package: shiny
-# \{shiny\}      R  error     ----------- Running application in test mode.
-# \{shiny\}      R  error     -----------
-# \{shiny\}      R  error     ----------- Listening on http://127.0.0.1:1505
-# \{shiny\}      R  error     ----------- SEND \{"config":\{"workerId":"","sessionId":|truncated
-# \{shiny\}      R  error     ----------- RECV \{"method":"init","data":\{"bins":30,|truncated
-# \{shiny\}      R  error     ----------- SEND \{"custom":\{"showcase-src":\{"srcref"|truncated
-# \{shiny\}      R  error     ----------- SEND \{"busy":"busy"\}
-# \{shiny\}      R  error     ----------- SEND \{"custom":\{"showcase-src":\{"srcref"|truncated
-# \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"busy":"idle"\}
-# \{shiny\}      R  error     ----------- SEND \{"errors":\{\},"values":\{"distPlot"|truncated
-# \{shiny\}      R  error     ----------- RECV \{"method":"update","data":\{"bins":20\}\}
-# \{shiny\}      R  error     ----------- SEND \{"progress":\{"type":"binding",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"busy":"busy"\}
-# \{shiny\}      R  error     ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
-# \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-# \{shiny\}      R  error     ----------- SEND \{"busy":"idle"\}
-# \{shiny\}      R  error     ----------- SEND \{"errors":\{\},"values":\{"distPlot"|truncated
+#> \{shinytest2\} R  info      10:01:57.49 Start AppDriver initialization
+#> \{shinytest2\} R  info      10:01:57.50 Starting Shiny app
+#> \{shinytest2\} R  info      10:01:58.20 Creating new ChromoteSession
+#> \{shinytest2\} R  info      10:01:58.35 Navigating to Shiny app
+#> \{shinytest2\} R  info      10:01:58.47 Injecting shiny-tracer.js
+#> \{chromote\}   JS info      10:01:58.49 shinytest2; jQuery not found
+#> \{chromote\}   JS info      10:01:58.49 shinytest2; Loaded
+#> \{shinytest2\} R  info      10:01:58.50 Waiting for Shiny to become ready
+#> \{chromote\}   JS info      10:01:58.55 shinytest2; jQuery found
+#> \{chromote\}   JS info      10:01:58.55 shinytest2; Waiting for shiny session to connect
+#> \{chromote\}   JS websocket 10:01:58.64 send WEBSOCKET_MSG
+#> \{chromote\}   JS websocket 10:01:58.67 recv WEBSOCKET_MSG
+#> \{chromote\}   JS info      10:01:58.67 shinytest2; Connected
+#> \{chromote\}   JS websocket 10:01:58.71 recv WEBSOCKET_MSG
+#> \{chromote\}   JS websocket 10:01:58.72 recv WEBSOCKET_MSG
+#> \{chromote\}   JS info      10:01:58.72 shinytest2; shiny:busy
+#> \{chromote\}   JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+#> \{chromote\}   JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+#> \{shinytest2\} R  info      10:01:58.75 Waiting for Shiny to become idle for 200ms within 15000ms
+#> \{chromote\}   JS info      10:01:58.75 shinytest2; Waiting for Shiny to be stable
+#> \{chromote\}   JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+#> \{chromote\}   JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+#> \{chromote\}   JS info      10:01:58.81 shinytest2; shiny:idle
+#> \{chromote\}   JS websocket 10:01:58.82 recv WEBSOCKET_MSG
+#> \{chromote\}   JS info      10:01:58.82 shinytest2; shiny:value distPlot
+#> \{chromote\}   JS info      10:01:59.01 shinytest2; Shiny has been idle for 200ms
+#> \{shinytest2\} R  info      10:01:59.01 Shiny app started
+#> \{shiny\}      R  stderr    ----------- Loading required package: shiny
+#> \{shiny\}      R  stderr    ----------- Running application in test mode.
+#> \{shiny\}      R  stderr    -----------
+#> \{shiny\}      R  stderr    ----------- Listening on http://127.0.0.1:4560
+#> \{shiny\}      R  stderr    ----------- SEND \{"config":\{"workerId":"","sessionId"|truncated
+#> \{shiny\}      R  stderr    ----------- RECV \{"method":"init","data":\{"bins":30,|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"busy":"busy"\}
+#> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
+#> \{shiny\}      R  stderr    ----------- SEND \{"busy":"idle"\}
+#> \{shiny\}      R  stderr    ----------- SEND \{"errors":\{\},"values":\{"distPlot":|truncated
 
 # The log that is returned is a `data.frame()`.
-log <- app$get_logs()
+log <- app2$get_logs()
 tibble::glimpse(log)
+#> Rows: 43
+#> Columns: 5
+#> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ timestamp <dttm> 2022-09-19 10:01:57, 2022-09-19 10:01:57, 2022-09-19 10:01:58, 2022…
+#> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shinytest2"…
+#> $ level     <chr> "info", "info", "info", "info", "info", "info", "info", "info", "inf…
+#> $ message   <chr> "Start AppDriver initialization", "Starting Shiny app", "Creating ne…
 #> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
 #> $ timestamp <dttm> 2022-03-16 11:09:57, 2022-03-16 11:09:57, 2022-03-16 11:09:…
 #> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shi…
@@ -2873,23 +3005,15 @@ tibble::glimpse(log)
 # It may be filtered to find desired logs
 subset(log, level == "websocket")
 ## (All WebSocket messages have been replaced with `WEBSOCKET_MSG` in example below)
-# \{chromote\}   JS websocket 11:09:58.73 send WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.78 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.85 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:58.86 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.08 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.10 send WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.11 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.12 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.14 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.18 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.19 recv WEBSOCKET_MSG
-# \{chromote\}   JS websocket 11:09:59.21 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.64 send WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.67 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.71 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.72 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.73 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.81 recv WEBSOCKET_MSG
+#> \{chromote\} JS websocket 10:01:58.82 recv WEBSOCKET_MSG
 }
 }
 \if{html}{\out{</div>}}
@@ -2918,6 +3042,7 @@ Add a message to the \pkg{shinytest2} log.
 \preformatted{\dontrun{
 app_path <- system.file("examples/01_hello", package = "shiny")
 app <- AppDriver$new(app_path)
+
 app$log_message("Setting bins to smaller value")
 app$set_inputs(bins = 10)
 app$get_logs()
@@ -2949,9 +3074,20 @@ Typically, this can be paired with a button that when clicked will call
 \code{shiny::stopApp(info)} to return \code{info} from the test app back to the
 main R session.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AppDriver$stop()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AppDriver$stop(signal_timeout = missing_arg())}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{signal_timeout}}{Milliseconds to wait between sending a \code{SIGINT},
+\code{SIGTERM}, and \code{SIGKILL} to the Shiny process. Defaults to 500ms and does
+not utilize the resolved value from \code{AppDriver$new(timeout=)}. However,
+if \pkg{covr} is currently executing, then the \code{timeout} is set to
+20,000ms to allow for the coverage report to be generated.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 The result of the background process if the Shiny application has
 already been terminated.
@@ -2981,6 +3117,7 @@ app <- AppDriver$new(
   # Enable reactlog in background R session
   options = list(shiny.reactlog = TRUE)
 )
+
 app$click("button")
 rlog <- app$stop()
 str(head(rlog, 2))

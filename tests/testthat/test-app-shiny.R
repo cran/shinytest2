@@ -1,5 +1,3 @@
-skip_on_cran() # Uses chromote
-
 library(shiny)
 
 
@@ -26,27 +24,21 @@ hello_app <- shinyApp(
 
 test_that("AppDriver can receive a shiny.obj object", {
 
-  app <- AppDriver$new(hello_app, name = "app", expect_values_screenshot_args = FALSE)
+  app <- AppDriver$new(hello_app, name = "app-shiny_app", expect_values_screenshot_args = FALSE)
 
   app$set_inputs(name = "Barret")
   app$click("greet")
 
-  app$expect_values()
-
   expect_true(fs::path_has_parent(app$get_dir(), tempdir()))
-
-  # Shut down this app to try an make CI happier about the next app
-  app$stop()
 })
 
 test_that("AppDriver can receive a shinyAppDir object", {
 
-  app <- AppDriver$new(hello_app, name = "app-dir", expect_values_screenshot_args = FALSE)
+  ex_app_dir <- shinyAppDir(system.file("examples/01_hello", package = "shiny"))
 
-  app$set_inputs(name = "Barret")
-  app$click("greet")
+  app <- AppDriver$new(ex_app_dir, name = "app-shiny_dir", expect_values_screenshot_args = FALSE)
 
-  app$expect_values()
+  app$set_inputs(bins = 20)
 
   expect_true(fs::path_has_parent(app$get_dir(), tempdir()))
 })

@@ -440,8 +440,9 @@ there’s a function <code>hello_world_app()</code>, which lives in
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  shiny_app <span class="ot">&lt;-</span> <span class="fu">hello_world_app</span>()</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(shiny_app, <span class="at">name =</span> <span class="st">&quot;hello&quot;</span>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
 <p>To help create tests, you can call <code>record_test()</code> on your
 shiny application object directly. Unfortunately, the test file will not
 be able to be saved. Instead, the test commands can be copied into a
@@ -472,6 +473,20 @@ but you will need to install your R package to safely execute your
 confusing situation where your <code>{shinytest2}</code> tests are
 running on a <em>different</em> version of your R package (whichever was
 last installed), than the rest of your tests (the current source).</p>
+</div>
+<div id="how-should-i-test-multiple-applications" class="section level2">
+<h2>How should I test multiple applications?</h2>
+<p>You can call <code>shinytest2::test_app()</code> multiple times
+within a test script. It does not need to be wrapped within a
+<code>testthat::test_that()</code> call.</p>
+<p><code>{shinytest2}</code> tests many internal apps using the code
+similar to the code below:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ./tests/testthat/test-apps.R</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>app_dirs <span class="ot">&lt;-</span> fs<span class="sc">::</span><span class="fu">dir_ls</span>(testthat<span class="sc">::</span><span class="fu">test_path</span>(<span class="st">&quot;apps&quot;</span>))</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(app_dirs, <span class="cf">function</span>(app_dir) {</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  shinytest2<span class="sc">::</span><span class="fu">test_app</span>(app_dir)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
 </div>
 <div id="continuous-integration" class="section level2">
 <h2>Continuous integration</h2>

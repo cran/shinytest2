@@ -389,8 +389,8 @@ when it’s being tested. To detect when it’s being tested, you can use
 testing environment?</h2>
 <p>Loading the support environment for a Shiny application requires a
 call to <code>shinytest2::load_app_env()</code> in
-<code>./tests/testthat/setup.R</code>. This method will load the
-<code>global.R</code> and all R files into the testing environment,
+<code>./tests/testthat/setup-shinytest2.R</code>. This method will load
+the <code>global.R</code> and all R files into the testing environment,
 similar to testing package R code.</p>
 <p>This is not automatically performed as it may be costly to load the
 support environment.</p>
@@ -459,14 +459,46 @@ with <code>shiny::snapshotPreprocessInput()</code>.</p>
 <p>For code completeness, you should call <code>app$stop()</code> at the
 end of your tests to shut down the background Shiny process and current
 Chromote Session.</p>
-<p>However, <code>{shinytest2}</code> does not do this for code brevity
-and relies on <code>AppDriver$private$finalizer()</code> (which is
-called when the value is garbage collected or the R session is stopped)
-to call <code>AppDriver$stop()</code>.</p>
 <p>If your R session is starting to feel more sluggish, you may want to
 call <code>app$stop()</code> manually. Or if you are programmatically
 creating many instances of <code>AppDriver</code>, you may want to call
-<code>app$stop()</code> when the specific test is complete.</p>
+<code>app$stop()</code> when the specific test is complete via
+<code>withr::defer(app$stop())</code> right after initialization.</p>
+</div>
+<div id="how-can-i-open-the-test-to-see-if-bookmarks-are-working" class="section level2">
+<h2>How can I open the test to see if bookmarks are working?</h2>
+<p>Testing Shiny bookmarks requires the browser to be loaded with
+specific query parameters. Luckily, you can use
+<code>{shinytest2}</code> to help you achieve this by running a local
+<code>AppDriver</code> and another <code>AppDriver</code> that uses a
+url with your specific query parameters! (<a href="https://github.com/rstudio/shinytest2/issues/219#issuecomment-1149162328">Original
+code</a>, <a href="https://github.com/rstudio/shinytest2/tree/v0.2.0/tests/testthat/apps/download">Working
+example</a>)</p>
+<p>File: <code>tests/testthat//test-bookmark.R</code></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;Bookmark works&quot;</span>, {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Start local app in the background in test mode</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  bg_app <span class="ot">&lt;-</span> shinytest2<span class="sc">::</span>AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="st">&quot;path/to/shiny/app&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Capture the background app&#39;s URL and add appropriate query parameters</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  bookmark_url <span class="ot">&lt;-</span> <span class="fu">paste0</span>(bg_app<span class="sc">$</span><span class="fu">get_url</span>(), <span class="st">&quot;?_inputs_&amp;n=10&quot;</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Open the bookmark URL in a new AppDriver object</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> shinytest2<span class="sc">::</span>AppDriver<span class="sc">$</span><span class="fu">new</span>(bookmark_url)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Run your tests on the bookmarked `app`</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<p>File: <code>tests/testthat/_snaps/bookmark/001.json</code></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;input&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;._bookmark_&quot;</span><span class="fu">:</span> <span class="dv">0</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;caps&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;txt&quot;</span><span class="fu">:</span> <span class="st">&quot;abcd&quot;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;output&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;out&quot;</span><span class="fu">:</span> <span class="st">&quot;ABCD&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;export&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 </div>
 
 
