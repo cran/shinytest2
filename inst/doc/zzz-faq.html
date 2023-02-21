@@ -380,9 +380,9 @@ value is available (or has a non-invalid value).</p>
 <p>Sometimes it can be useful to alter the behavior of your application
 when it’s being tested. To detect when it’s being tested, you can use
 <code>isTRUE(getOption(&quot;shiny.testmode&quot;))</code>, as in:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">isTRUE</span>(<span class="fu">getOption</span>(<span class="st">&quot;shiny.testmode&quot;</span>))) {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>   <span class="co"># Do something special here</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">isTRUE</span>(<span class="fu">getOption</span>(<span class="st">&quot;shiny.testmode&quot;</span>))) {</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>   <span class="co"># Do something special here</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div id="how-can-i-get-the-objects-from-files-in-my-the-r-folder-into-the-testing-environment" class="section level2">
 <h2>How can I get the objects from files in my the R folder into the
@@ -428,25 +428,25 @@ to JSON. The plotly R package uses this method in <a href="https://github.com/pl
 renderer function, and this would have to be done by the author of the
 component. It is also possible for an application author to modify a
 renderer with something like the following:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">shinyApp</span>(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">ui =</span> <span class="fu">fluidPage</span>(</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">verbatimTextOutput</span>(<span class="st">&quot;random&quot;</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">server =</span> <span class="cf">function</span>(input, output, session) {</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>random <span class="ot">&lt;-</span> <span class="fu">snapshotPreprocessOutput</span>(</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">renderText</span>({</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">paste</span>(<span class="st">&quot;This is a random number:&quot;</span>, <span class="fu">rnorm</span>(<span class="dv">1</span>))</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      }),</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      <span class="cf">function</span>(value) {</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sub</span>(<span class="st">&quot;[0-9.]+$&quot;</span>, <span class="st">&quot;&lt;a random number&gt;&quot;</span>, value)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">shinyApp</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="at">ui =</span> <span class="fu">fluidPage</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>    <span class="fu">verbatimTextOutput</span>(<span class="st">&quot;random&quot;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  ),</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="at">server =</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>    output<span class="sc">$</span>random <span class="ot">&lt;-</span> <span class="fu">snapshotPreprocessOutput</span>(</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>      <span class="fu">renderText</span>({</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>        <span class="fu">paste</span>(<span class="st">&quot;This is a random number:&quot;</span>, <span class="fu">rnorm</span>(<span class="dv">1</span>))</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>      }),</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>      <span class="cf">function</span>(value) {</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>        <span class="fu">sub</span>(<span class="st">&quot;[0-9.]+$&quot;</span>, <span class="st">&quot;&lt;a random number&gt;&quot;</span>, value)</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>      }</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>    )</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  }</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>)</span></code></pre></div>
 <p>The output in the JSON snapshot will be:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>  <span class="er">&quot;output&quot;:</span> <span class="fu">{</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;random&quot;</span><span class="fu">:</span> <span class="st">&quot;This is a random number: &lt;a random number&gt;&quot;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>  <span class="er">&quot;output&quot;:</span> <span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>    <span class="dt">&quot;random&quot;</span><span class="fu">:</span> <span class="st">&quot;This is a random number: &lt;a random number&gt;&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="fu">}</span></span></code></pre></div>
 <p>(This example is just for illustration purposes. Note that for this
 example, the screenshots will still change each time the test is run, so
 there are better solutions, like <a href="in-depth.html#controlling-randomness">setting the random
@@ -475,30 +475,30 @@ url with your specific query parameters! (<a href="https://github.com/rstudio/sh
 code</a>, <a href="https://github.com/rstudio/shinytest2/tree/v0.2.0/tests/testthat/apps/download">Working
 example</a>)</p>
 <p>File: <code>tests/testthat//test-bookmark.R</code></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;Bookmark works&quot;</span>, {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Start local app in the background in test mode</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  bg_app <span class="ot">&lt;-</span> shinytest2<span class="sc">::</span>AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="st">&quot;path/to/shiny/app&quot;</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Capture the background app&#39;s URL and add appropriate query parameters</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  bookmark_url <span class="ot">&lt;-</span> <span class="fu">paste0</span>(bg_app<span class="sc">$</span><span class="fu">get_url</span>(), <span class="st">&quot;?_inputs_&amp;n=10&quot;</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Open the bookmark URL in a new AppDriver object</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> shinytest2<span class="sc">::</span>AppDriver<span class="sc">$</span><span class="fu">new</span>(bookmark_url)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Run your tests on the bookmarked `app`</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;Bookmark works&quot;</span>, {</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="co"># Start local app in the background in test mode</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  bg_app <span class="ot">&lt;-</span> shinytest2<span class="sc">::</span>AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="st">&quot;path/to/shiny/app&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="co"># Capture the background app&#39;s URL and add appropriate query parameters</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  bookmark_url <span class="ot">&lt;-</span> <span class="fu">paste0</span>(bg_app<span class="sc">$</span><span class="fu">get_url</span>(), <span class="st">&quot;?_inputs_&amp;n=10&quot;</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="co"># Open the bookmark URL in a new AppDriver object</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  app <span class="ot">&lt;-</span> shinytest2<span class="sc">::</span>AppDriver<span class="sc">$</span><span class="fu">new</span>(bookmark_url)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="co"># Run your tests on the bookmarked `app`</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>})</span></code></pre></div>
 <p>File: <code>tests/testthat/_snaps/bookmark/001.json</code></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;input&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;._bookmark_&quot;</span><span class="fu">:</span> <span class="dv">0</span><span class="fu">,</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;caps&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;txt&quot;</span><span class="fu">:</span> <span class="st">&quot;abcd&quot;</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;output&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;out&quot;</span><span class="fu">:</span> <span class="st">&quot;ABCD&quot;</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;export&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="dt">&quot;input&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>    <span class="dt">&quot;._bookmark_&quot;</span><span class="fu">:</span> <span class="dv">0</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    <span class="dt">&quot;caps&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>    <span class="dt">&quot;txt&quot;</span><span class="fu">:</span> <span class="st">&quot;abcd&quot;</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="dt">&quot;output&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>    <span class="dt">&quot;out&quot;</span><span class="fu">:</span> <span class="st">&quot;ABCD&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="dt">&quot;export&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 </div>
 
 

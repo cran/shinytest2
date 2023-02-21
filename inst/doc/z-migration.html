@@ -420,15 +420,15 @@ referred to as <code>new</code> in each code block.</p>
 <code>ShinyDriver$click(name, iotype = c(&quot;auto&quot;, &quot;input&quot;, &quot;output&quot;))</code></p>
 <p>The parameters have been separated to be clearer in their intended
 use to <code>AppDriver$click(input, output, ..., selector)</code>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">click</span>(<span class="st">&quot;mybutton&quot;</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">click</span>(<span class="st">&quot;clickcount&quot;</span>, <span class="at">iotype =</span> <span class="st">&quot;output&quot;</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">click</span>(<span class="st">&quot;my_id&quot;</span>, <span class="at">iotype =</span> <span class="st">&quot;auto&quot;</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">click</span>(<span class="st">&quot;mybutton&quot;</span>); new<span class="sc">$</span><span class="fu">click</span>(<span class="at">input =</span> <span class="st">&quot;mybutton&quot;</span>)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">click</span>(<span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">click</span>(<span class="at">selector =</span> <span class="st">&quot;#my_id&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">click</span>(<span class="st">&quot;mybutton&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">click</span>(<span class="st">&quot;clickcount&quot;</span>, <span class="at">iotype =</span> <span class="st">&quot;output&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">click</span>(<span class="st">&quot;my_id&quot;</span>, <span class="at">iotype =</span> <span class="st">&quot;auto&quot;</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">click</span>(<span class="st">&quot;mybutton&quot;</span>); new<span class="sc">$</span><span class="fu">click</span>(<span class="at">input =</span> <span class="st">&quot;mybutton&quot;</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">click</span>(<span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">click</span>(<span class="at">selector =</span> <span class="st">&quot;#my_id&quot;</span>)</span></code></pre></div>
 </div>
 <div id="shinydriverexecutescript" class="section level3">
 <h3><code>ShinyDriver$executeScript()</code></h3>
@@ -441,22 +441,22 @@ which will throw an error if the <code>timeout</code> (in milliseconds)
 is reached before the script returns. If a promise is the last value in
 the <code>script</code> then the <code>resolve</code>d value will be
 sent back to the R session.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>life <span class="ot">&lt;-</span> <span class="dv">42</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">executeScript</span>(<span class="st">&quot;1 + 1;&quot;</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">executeScript</span>(<span class="st">&quot;var life = arguments[0]; life;&quot;</span>, life)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>life <span class="ot">&lt;-</span> <span class="dv">42</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(<span class="st">&quot;1 + 1;&quot;</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(<span class="fu">paste0</span>(<span class="st">&quot;let life = &quot;</span>, jsonlite<span class="sc">::</span><span class="fu">toJSON</span>(life, <span class="at">auto_unbox =</span> <span class="cn">TRUE</span>), <span class="st">&quot;; life;&quot;</span>))</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># If a promise is returned, the resolved value will be sent back to the R session</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paset0</span>(<span class="st">&quot;</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">  let life = &quot;</span>, jsonlite<span class="sc">::</span><span class="fu">toJSON</span>(life, <span class="at">auto_unbox =</span> <span class="cn">TRUE</span>), <span class="st">&quot;;</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">  new Promise((resolve, reject) =&gt; resolve(life));</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;</span>)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>life <span class="ot">&lt;-</span> <span class="dv">42</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">executeScript</span>(<span class="st">&quot;1 + 1;&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">executeScript</span>(<span class="st">&quot;var life = arguments[0]; life;&quot;</span>, life)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>life <span class="ot">&lt;-</span> <span class="dv">42</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(<span class="st">&quot;1 + 1;&quot;</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(<span class="fu">paste0</span>(<span class="st">&quot;let life = &quot;</span>, jsonlite<span class="sc">::</span><span class="fu">toJSON</span>(life, <span class="at">auto_unbox =</span> <span class="cn">TRUE</span>), <span class="st">&quot;; life;&quot;</span>))</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co"># If a promise is returned, the resolved value will be sent back to the R session</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="fu">paset0</span>(<span class="st">&quot;</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="st">  let life = &quot;</span>, jsonlite<span class="sc">::</span><span class="fu">toJSON</span>(life, <span class="at">auto_unbox =</span> <span class="cn">TRUE</span>), <span class="st">&quot;;</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="st">  new Promise((resolve, reject) =&gt; resolve(life));</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="st">  &quot;</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div id="shinydriverexecutescriptasync" class="section level3">
 <h3><code>ShinyDriver$executeScriptAsync()</code></h3>
@@ -471,32 +471,32 @@ be updated to use a JavaScript <code>Promise.</code> The
 callback that you used previously. You should also provide a maximum
 <code>timeout</code> (in milliseconds) that you are willing to wait
 before an error is thrown. For example:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Wait until a button is clicked</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">executeScriptAsync</span>(</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">  var selector = arguments[0];</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">  var callback = arguments[1];</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">  $( selector ).one( &quot;click&quot;, function() {</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">    callback();</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="st">  });</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;</span>,</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;#mybutton&quot;</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Wait until a button is clicked</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">&quot;</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="st">  let selector = &quot;</span>, jsonlite<span class="sc">::</span><span class="fu">toJSON</span>(<span class="st">&quot;#mybutton&quot;</span>, <span class="at">auto_unbox =</span> <span class="cn">TRUE</span>), <span class="st">&quot;;</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="st">  new Promise((resolve, reject) =&gt; {</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="st">    $( selector ).one( </span><span class="sc">\&quot;</span><span class="st">click</span><span class="sc">\&quot;</span><span class="st">, function() {</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="st">      resolve();</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="st">    });</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="st">  });</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;</span>),</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">timeout =</span> <span class="dv">15</span> <span class="sc">*</span> <span class="dv">1000</span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># Wait until a button is clicked</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">executeScriptAsync</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="st">&#39;</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="st">  var selector = arguments[0];</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="st">  var callback = arguments[1];</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="st">  $( selector ).one( &quot;click&quot;, function() {</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="st">    callback();</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="st">  });</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="st">  &#39;</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="st">&quot;#mybutton&quot;</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>)</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co"># Wait until a button is clicked</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">&quot;</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="st">  let selector = &quot;</span>, jsonlite<span class="sc">::</span><span class="fu">toJSON</span>(<span class="st">&quot;#mybutton&quot;</span>, <span class="at">auto_unbox =</span> <span class="cn">TRUE</span>), <span class="st">&quot;;</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="st">  new Promise((resolve, reject) =&gt; {</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="st">    $( selector ).one( </span><span class="sc">\&quot;</span><span class="st">click</span><span class="sc">\&quot;</span><span class="st">, function() {</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="st">      resolve();</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="st">    });</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="st">  });</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="st">  &quot;</span>),</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>  <span class="at">timeout =</span> <span class="dv">15</span> <span class="sc">*</span> <span class="dv">1000</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div id="shinydrivergetallvalues" class="section level3">
 <h3><code>ShinyDriver$getAllValues()</code></h3>
@@ -513,19 +513,19 @@ for the provided <code>input</code>, <code>output</code> or
 <code>output</code> or <code>export</code> are provided, then the method
 will return all values, similar to setting
 <code>ShinyDriver$getAllValues(input = TRUE, output = TRUE, export = TRUE)</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAllValues</span>()</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># All input values</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAllValues</span>(<span class="at">input =</span> <span class="cn">TRUE</span>, <span class="at">output =</span> <span class="cn">FALSE</span>, <span class="at">export =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Only `clickcount` output value</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAllValues</span>(<span class="at">input =</span> <span class="cn">FALSE</span>, <span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>, <span class="at">export =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_values</span>()</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># All input values</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">input =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Only `clickcount` output value</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAllValues</span>()</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co"># All input values</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAllValues</span>(<span class="at">input =</span> <span class="cn">TRUE</span>, <span class="at">output =</span> <span class="cn">FALSE</span>, <span class="at">export =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># Only `clickcount` output value</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAllValues</span>(<span class="at">input =</span> <span class="cn">FALSE</span>, <span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>, <span class="at">export =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_values</span>()</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co"># All input values</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">input =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co"># Only `clickcount` output value</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>)</span></code></pre></div>
 </div>
 <div id="shinydrivergetvalue" class="section level3">
 <h3><code>ShinyDriver$getValue()</code></h3>
@@ -535,23 +535,23 @@ will return all values, similar to setting
 <code>AppDriver$get_value(..., input, output, export)</code> and its
 parameters have been spread out into <code>input</code> and
 <code>output</code>, while adding support for <code>export</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getValue</span>(<span class="st">&quot;myinput&quot;</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">&quot;myinput&quot;</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Equivalent to</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">input =</span> <span class="st">&quot;myinput&quot;</span>)<span class="sc">$</span>input<span class="sc">$</span>myinput</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getValue</span>(<span class="st">&quot;myinput&quot;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">&quot;myinput&quot;</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co"># Equivalent to</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">input =</span> <span class="st">&quot;myinput&quot;</span>)<span class="sc">$</span>input<span class="sc">$</span>myinput</span></code></pre></div>
 </div>
 <div id="shinydrivergeturl" class="section level3">
 <h3><code>ShinyDriver$getUrl()</code></h3>
 <p>Signature: <code>ShinyDriver$getUrl()</code></p>
 <p>This method has been renamed to <code>AppDriver$get_url()</code>.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getUrl</span>()</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_url</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getUrl</span>()</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_url</span>()</span></code></pre></div>
 </div>
 <div id="shinydriversetinputs" class="section level3">
 <h3><code>ShinyDriver$setInputs()</code></h3>
@@ -563,12 +563,12 @@ converted to <code>snake_case</code>. <code>value_</code> support has
 been removed, but the same functionality can be achieved via a call to
 <code>AppDriver$get_values()</code> <em>after</em> a call to
 <code>AppDriver$set_inputs()</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>getValuesResult <span class="ot">&lt;-</span> old<span class="sc">$</span><span class="fu">setInputs</span>(<span class="at">life =</span> <span class="dv">42</span>)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="at">life =</span> <span class="dv">42</span>)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>get_values_result <span class="ot">&lt;-</span> new<span class="sc">$</span><span class="fu">get_values</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>getValuesResult <span class="ot">&lt;-</span> old<span class="sc">$</span><span class="fu">setInputs</span>(<span class="at">life =</span> <span class="dv">42</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="at">life =</span> <span class="dv">42</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>get_values_result <span class="ot">&lt;-</span> new<span class="sc">$</span><span class="fu">get_values</span>()</span></code></pre></div>
 </div>
 <div id="shinydrivergetwindowsize-shinydriversetwindowsize" class="section level3">
 <h3><code>ShinyDriver$getWindowSize()</code>,
@@ -578,13 +578,13 @@ been removed, but the same functionality can be achieved via a call to
 <p>These methods have been renamed to
 <code>AppDriver$get_window_size()</code> and
 <code>AppDriver$set_window_size(width, height)</code> respectively.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getWindowSize</span>()</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">setWindowSize</span>(<span class="at">width =</span> <span class="dv">1024</span>, <span class="at">height =</span> <span class="dv">768</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_window_size</span>()</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">set_window_size</span>(<span class="at">width =</span> <span class="dv">1024</span>, <span class="at">height =</span> <span class="dv">768</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getWindowSize</span>()</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">setWindowSize</span>(<span class="at">width =</span> <span class="dv">1024</span>, <span class="at">height =</span> <span class="dv">768</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_window_size</span>()</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">set_window_size</span>(<span class="at">width =</span> <span class="dv">1024</span>, <span class="at">height =</span> <span class="dv">768</span>)</span></code></pre></div>
 </div>
 <div id="shinydrivercheckuniquewidgetnames" class="section level3">
 <h3><code>ShinyDriver$checkUniqueWidgetNames()</code></h3>
@@ -595,11 +595,11 @@ unique. It is still run at initialization via
 found during startup, only warnings will be displayed. The exported
 method has been upgraded to an expectation version and renamed to
 <code>AppDriver$expect_unique_names()</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">checkUniqueWidgetNames</span>()</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_unique_names</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">checkUniqueWidgetNames</span>()</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_unique_names</span>()</span></code></pre></div>
 </div>
 </div>
 <div id="snapshots" class="section level2">
@@ -617,13 +617,13 @@ assert that the value is consistent over many testing executions.</p>
 <code>AppDriver$new(variant=)</code> value is provided.
 <code>variant</code> is similar to the <code>suffix</code> value in
 <code>shinytest::testApp(suffix=)</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">snapshotInit</span>(<span class="st">&quot;mytest&quot;</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">name =</span> <span class="st">&quot;mytest&quot;</span>, <span class="at">variant =</span> <span class="cn">NULL</span>)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Suggested</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">name =</span> <span class="st">&quot;mytest&quot;</span>, <span class="at">variant =</span> <span class="fu">platform_variant</span>())</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">snapshotInit</span>(<span class="st">&quot;mytest&quot;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">name =</span> <span class="st">&quot;mytest&quot;</span>, <span class="at">variant =</span> <span class="cn">NULL</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co"># Suggested</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">name =</span> <span class="st">&quot;mytest&quot;</span>, <span class="at">variant =</span> <span class="fu">platform_variant</span>())</span></code></pre></div>
 </div>
 <div id="shinydriversnapshot" class="section level3">
 <h3><code>ShinyDriver$snapshot()</code></h3>
@@ -641,19 +641,19 @@ like while not having to constantly battle with false-positive
 screenshot failures. If a single <code>output</code> value is supplied
 to <code>AppDriver$expect_values()</code>, then the <em>debug</em>
 screenshot is zoomed in on the output value.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">snapshot</span>()</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">snapshot</span>(<span class="at">items =</span> <span class="fu">list</span>(<span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>))</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Must supply `variant=` to be able to call `AppDriver$expect_screenshot()`, even if it is `NULL`</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app, <span class="at">variant =</span> <span class="cn">NULL</span>)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_screenshot</span>(); new<span class="sc">$</span><span class="fu">expect_values</span>()</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_screenshot</span>(); new<span class="sc">$</span><span class="fu">expect_values</span>(<span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>)</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Suggested;</span></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app)</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_values</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">snapshot</span>()</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">snapshot</span>(<span class="at">items =</span> <span class="fu">list</span>(<span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>))</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co"># Must supply `variant=` to be able to call `AppDriver$expect_screenshot()`, even if it is `NULL`</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app, <span class="at">variant =</span> <span class="cn">NULL</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_screenshot</span>(); new<span class="sc">$</span><span class="fu">expect_values</span>()</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_screenshot</span>(); new<span class="sc">$</span><span class="fu">expect_values</span>(<span class="at">output =</span> <span class="st">&quot;clickcount&quot;</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co"># Suggested;</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app)</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_values</span>()</span></code></pre></div>
 </div>
 <div id="shinydrivertakescreenshot" class="section level3">
 <h3><code>ShinyDriver$takeScreenshot()</code></h3>
@@ -664,14 +664,14 @@ screenshot is zoomed in on the output value.</p>
 <code>parent</code> parameters have been removed. To use a selector, set
 <code>AppDriver$get_screenshot(myfile, selector = &quot;.custom-selector&quot;)</code>
 or <code>screenshot_args</code> directly.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">takeScreenshot</span>(<span class="st">&quot;myfile1.png&quot;</span>)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">takeScreenshot</span>(<span class="st">&quot;myfile2.png&quot;</span>, <span class="at">id =</span> <span class="st">&quot;myid&quot;</span>)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_screenshot</span>(<span class="st">&quot;myfile1.png&quot;</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_screenshot</span>(<span class="st">&quot;myfile2.png&quot;</span>, <span class="at">selector =</span> <span class="st">&quot;#myid&quot;</span>)</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_screenshot</span>(<span class="st">&quot;myfile2.png&quot;</span>, <span class="at">screenshot_args =</span> <span class="fu">list</span>(<span class="at">selector =</span> <span class="st">&quot;#myid&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">takeScreenshot</span>(<span class="st">&quot;myfile1.png&quot;</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">takeScreenshot</span>(<span class="st">&quot;myfile2.png&quot;</span>, <span class="at">id =</span> <span class="st">&quot;myid&quot;</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_screenshot</span>(<span class="st">&quot;myfile1.png&quot;</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_screenshot</span>(<span class="st">&quot;myfile2.png&quot;</span>, <span class="at">selector =</span> <span class="st">&quot;#myid&quot;</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_screenshot</span>(<span class="st">&quot;myfile2.png&quot;</span>, <span class="at">screenshot_args =</span> <span class="fu">list</span>(<span class="at">selector =</span> <span class="st">&quot;#myid&quot;</span>))</span></code></pre></div>
 </div>
 <div id="shinydriversnapshotdownload" class="section level3">
 <h3><code>ShinyDriver$snapshotDownload()</code></h3>
@@ -679,11 +679,11 @@ or <code>screenshot_args</code> directly.</p>
 <code>ShinyDriver$snapshotDownload(id, filename)</code></p>
 <p>This method has been renamed to
 <code>AppDriver$expect_download(id, filename)</code>.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">snapshotDownload</span>(<span class="st">&quot;mylinkid&quot;</span>)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_download</span>(<span class="st">&quot;mylinkid&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">snapshotDownload</span>(<span class="st">&quot;mylinkid&quot;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">expect_download</span>(<span class="st">&quot;mylinkid&quot;</span>)</span></code></pre></div>
 </div>
 <div id="shinydriverstop" class="section level3">
 <h3><code>ShinyDriver$stop()</code></h3>
@@ -700,11 +700,11 @@ any temporary Shiny log files.</p>
 <code>AppDriver$upload_file(...)</code>, and similar to
 <code>AppDriver$set_inputs()</code>, support for
 <code>ShinyDriver$uploadFile(values_ =)</code> has been removed.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">uploadFile</span>(<span class="at">myFileInput =</span> <span class="st">&quot;myfile.txt&quot;</span>)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">upload_file</span>(<span class="at">myFileInput =</span> <span class="st">&quot;myfile.txt&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">uploadFile</span>(<span class="at">myFileInput =</span> <span class="st">&quot;myfile.txt&quot;</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">upload_file</span>(<span class="at">myFileInput =</span> <span class="st">&quot;myfile.txt&quot;</span>)</span></code></pre></div>
 </div>
 <div id="shinydriverwaitfor" class="section level3">
 <h3><code>ShinyDriver$waitFor()</code></h3>
@@ -714,11 +714,11 @@ any temporary Shiny log files.</p>
 <code>AppDriver$wait_for_js(script, timeout, interval)</code>. Like
 other JavaScript methods in <code>{shinytest2}</code>,
 <code>script</code> needs to explicitly return a value.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">waitFor</span>(<span class="st">&quot;$(&#39;#myid&#39;).length &gt; 0&quot;</span>)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_js</span>(<span class="st">&quot;$(&#39;#myid&#39;).length &gt; 0&quot;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">waitFor</span>(<span class="st">&quot;$(&#39;#myid&#39;).length &gt; 0&quot;</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_js</span>(<span class="st">&quot;$(&#39;#myid&#39;).length &gt; 0&quot;</span>);</span></code></pre></div>
 </div>
 <div id="shinydriverwaitforshiny" class="section level3">
 <h3><code>ShinyDriver$waitForShiny()</code></h3>
@@ -731,14 +731,14 @@ method will wait until Shiny has been “idle” for a continuous stretch of
 time. It is useful to wait until Shiny has been idle for a set duration
 in order to avoid situations where dynamic UI needs to calculate new
 outputs given new input information.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">waitForShiny</span>()</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Equivalent</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_idle</span>(<span class="at">duration =</span> <span class="dv">0</span>, <span class="at">timeout =</span> <span class="dv">3</span> <span class="sc">*</span> <span class="dv">1000</span>)</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Suggested (Shiny must become continuously idle for at least 500ms within 30s</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_idle</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">waitForShiny</span>()</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co"># Equivalent</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_idle</span>(<span class="at">duration =</span> <span class="dv">0</span>, <span class="at">timeout =</span> <span class="dv">3</span> <span class="sc">*</span> <span class="dv">1000</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co"># Suggested (Shiny must become continuously idle for at least 500ms within 30s</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_idle</span>()</span></code></pre></div>
 </div>
 <div id="shinydriverwaitforvalue" class="section level3">
 <h3><code>ShinyDriver$waitForValue()</code></h3>
@@ -753,13 +753,13 @@ value may be supplied in an <code>AppDriver</code> object. The
 still poll the Shiny application at a set <code>interval</code> for the
 corresponding value to be something <em>not</em> in the
 <code>ignore</code>d set of values.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">waitForValue</span>(<span class="st">&quot;myslider&quot;</span>)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">waitForValue</span>(<span class="st">&quot;mydynamicplot&quot;</span>, <span class="at">iotype =</span> <span class="st">&quot;output&quot;</span>)</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_value</span>(<span class="st">&quot;myslider&quot;</span>); new<span class="sc">$</span><span class="fu">wait_for_value</span>(<span class="at">input =</span> <span class="st">&quot;myslider&quot;</span>)</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_value</span>(<span class="at">output =</span> <span class="st">&quot;mydynamicplot&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">waitForValue</span>(<span class="st">&quot;myslider&quot;</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">waitForValue</span>(<span class="st">&quot;mydynamicplot&quot;</span>, <span class="at">iotype =</span> <span class="st">&quot;output&quot;</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_value</span>(<span class="st">&quot;myslider&quot;</span>); new<span class="sc">$</span><span class="fu">wait_for_value</span>(<span class="at">input =</span> <span class="st">&quot;myslider&quot;</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">wait_for_value</span>(<span class="at">output =</span> <span class="st">&quot;mydynamicplot&quot;</span>)</span></code></pre></div>
 </div>
 </div>
 <div id="elements-widgets" class="section level2">
@@ -781,16 +781,16 @@ the methods that were provided in <code>{shinytest}</code>.</p>
 <code>ShinyDriver$findWidget(name, iotype = c(&quot;auto&quot;, &quot;input&quot;, &quot;output&quot;))</code></p>
 <p>These methods have been removed. It is suggested to use JavaScript
 code directly or use newer helper methods.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">findElement</span>(<span class="st">&quot;#mybutton&quot;</span>)<span class="sc">$</span><span class="fu">click</span>()</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">findElement</span>(<span class="st">&quot;#mybutton&quot;</span>)<span class="sc">$</span><span class="fu">getText</span>()</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">findElement</span>(<span class="st">&quot;#mybutton&quot;</span>)<span class="sc">$</span><span class="fu">getCssValue</span>(<span class="st">&quot;color&quot;</span>)</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_text</span>(<span class="at">selector =</span> <span class="st">&quot;#mybutton&quot;</span>)</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">click</span>(<span class="at">selector =</span> <span class="st">&quot;#mybutton&quot;</span>)</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># No direct equivalent method. Using JavaScript instead</span></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(<span class="st">&#39;$(&quot;#mybutton&quot;).css(&quot;color&quot;)&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">findElement</span>(<span class="st">&quot;#mybutton&quot;</span>)<span class="sc">$</span><span class="fu">click</span>()</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">findElement</span>(<span class="st">&quot;#mybutton&quot;</span>)<span class="sc">$</span><span class="fu">getText</span>()</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">findElement</span>(<span class="st">&quot;#mybutton&quot;</span>)<span class="sc">$</span><span class="fu">getCssValue</span>(<span class="st">&quot;color&quot;</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_text</span>(<span class="at">selector =</span> <span class="st">&quot;#mybutton&quot;</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">click</span>(<span class="at">selector =</span> <span class="st">&quot;#mybutton&quot;</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="co"># No direct equivalent method. Using JavaScript instead</span></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(<span class="st">&#39;$(&quot;#mybutton&quot;).css(&quot;color&quot;)&#39;</span>)</span></code></pre></div>
 </div>
 <div id="shinydrivergetsource-shinydrivergettitle" class="section level3">
 <h3><code>ShinyDriver$getSource()</code>,
@@ -799,13 +799,13 @@ code directly or use newer helper methods.</p>
 <code>ShinyDriver$getTitle()</code></p>
 <p>These methods have been removed. It is suggested to use JavaScript
 code directly, or to use newer helper methods.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getSource</span>()</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getTitle</span>()</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_html</span>(<span class="st">&quot;html&quot;</span>, <span class="at">outer_html =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(<span class="st">&quot;window.document.title;&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getSource</span>()</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getTitle</span>()</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_html</span>(<span class="st">&quot;html&quot;</span>, <span class="at">outer_html =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_js</span>(<span class="st">&quot;window.document.title;&quot;</span>)</span></code></pre></div>
 </div>
 </div>
 <div id="testing-setup" class="section level2">
@@ -819,11 +819,11 @@ robustness of different testing approaches, please see the <a href="./robust.htm
 <li><code>ShinyDriver$new(suffix=)</code>: Please use
 <code>AppDriver$new(variant=)</code>.</li>
 </ul>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>old <span class="ot">&lt;-</span> ShinyDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app, <span class="at">suffix =</span> <span class="st">&quot;macos-4.1&quot;</span>)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app, <span class="at">variant =</span> <span class="st">&quot;macos-4.1&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>old <span class="ot">&lt;-</span> ShinyDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app, <span class="at">suffix =</span> <span class="st">&quot;macos-4.1&quot;</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app, <span class="at">variant =</span> <span class="st">&quot;macos-4.1&quot;</span>)</span></code></pre></div>
 <div id="shinydrivergetrelativepathtoapp-shinydrivergettestsdir" class="section level3">
 <h3><code>ShinyDriver$getRelativePathToApp()</code>,
 <code>ShinyDriver$getTestsDir()</code></h3>
@@ -848,18 +848,18 @@ value has been updated, it is very uncertain as to what the new value
 is. While possibly useful, it is not robust and therefore not
 recommended. Other testing methods should be explored.</p>
 <p>Equivalent code has been provided below for legacy support.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">expectUpdate</span>(<span class="st">&quot;myoutput&quot;</span>, <span class="at">myinput =</span> <span class="dv">42</span>)</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2} (equivalent code)</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>myoutput_prior <span class="ot">&lt;-</span> new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">output =</span> <span class="st">&quot;myoutput&quot;</span>)</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="at">myinput =</span> <span class="dv">42</span>)</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_failure</span>(</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">output =</span> <span class="st">&quot;myoutput&quot;</span>),</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    myoutput_prior</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">expectUpdate</span>(<span class="st">&quot;myoutput&quot;</span>, <span class="at">myinput =</span> <span class="dv">42</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="do">## {shinytest2} (equivalent code)</span></span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>myoutput_prior <span class="ot">&lt;-</span> new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">output =</span> <span class="st">&quot;myoutput&quot;</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="at">myinput =</span> <span class="dv">42</span>)</span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">expect_failure</span>(</span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a>    new<span class="sc">$</span><span class="fu">get_values</span>(<span class="at">output =</span> <span class="st">&quot;myoutput&quot;</span>),</span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a>    myoutput_prior</span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a>  )</span>
+<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 </div>
 <div id="debugging" class="section level2">
@@ -882,20 +882,20 @@ recorded using <code>AppDriver$log_message(text)</code>, but
 <li><code>ShinyDriver$enableDebugLogMessages(enable = TRUE)</code>: No
 longer used. <em>All</em> messages are always recorded.</li>
 </ul>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getDebugLog</span>(); old<span class="sc">$</span><span class="fu">getEventLog</span>()</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">logEvent</span>(<span class="st">&quot;Creating report&quot;</span>)</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_logs</span>()</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">log_message</span>(<span class="st">&quot;Creating report&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getDebugLog</span>(); old<span class="sc">$</span><span class="fu">getEventLog</span>()</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">logEvent</span>(<span class="st">&quot;Creating report&quot;</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_logs</span>()</span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">log_message</span>(<span class="st">&quot;Creating report&quot;</span>)</span></code></pre></div>
 <p>If <code>options = list(shiny.trace = TRUE)</code> is set when
 initializing an <code>AppDriver</code> object, then all WebSocket
 traffic will be recorded.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Record all websocket traffic. Caution!! This is very verbose!!</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">shiny.trace =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_logs</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="co"># Record all websocket traffic. Caution!! This is very verbose!!</span></span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>new <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(path_to_app, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">shiny.trace =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">get_logs</span>()</span></code></pre></div>
 </div>
 <div id="other-removed-methods" class="section level2">
 <h2>Other removed methods</h2>
@@ -905,21 +905,21 @@ output value, it must be performed by setting an input value and having
 your render methods set the output value. To set an input value, use
 <code>AppDriver$set_inputs()</code>.</li>
 </ul>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">setValue</span>(<span class="st">&quot;myinput&quot;</span>, <span class="dv">42</span>)</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="at">myinput =</span> <span class="dv">42</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">setValue</span>(<span class="st">&quot;myinput&quot;</span>, <span class="dv">42</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="at">myinput =</span> <span class="dv">42</span>)</span></code></pre></div>
 <ul>
 <li><code>ShinyDriver$listWidgets()</code>: This method has been removed
 and can be achieved by getting the names of the existing values:
 <code>AppDriver$get_values()</code>.</li>
 </ul>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">listWidgets</span>()</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(new<span class="sc">$</span><span class="fu">get_values</span>(), names)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">listWidgets</span>()</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a><span class="fu">lapply</span>(new<span class="sc">$</span><span class="fu">get_values</span>(), names)</span></code></pre></div>
 <ul>
 <li><p><code>ShinyDriver$clone()</code>: <code>AppDriver</code> does not
 support cloning. (The underlying <code>ChromoteSession</code> does not
@@ -929,15 +929,15 @@ cloning.)</p></li>
 <code>ShinyDriver$refresh()</code>: These methods have been removed, but
 can be achieved with <code>AppDriver$run_js(script)</code>.</p></li>
 </ul>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">goBack</span>()</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">refresh</span>()</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Go back</span></span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">run_js</span>(<span class="st">&quot;window.history.back();&quot;</span>)</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Refresh page</span></span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">run_js</span>(<span class="st">&quot;window.location.reload();&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">goBack</span>()</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">refresh</span>()</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a><span class="co"># Go back</span></span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">run_js</span>(<span class="st">&quot;window.history.back();&quot;</span>)</span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a><span class="co"># Refresh page</span></span>
+<span id="cb26-9"><a href="#cb26-9" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">run_js</span>(<span class="st">&quot;window.location.reload();&quot;</span>)</span></code></pre></div>
 <ul>
 <li><code>ShinyDriver$getAppDir()</code>,
 <code>ShinyDriver$getAppFilename()</code>,
@@ -947,16 +947,16 @@ the only method still supported given
 other methods have been removed as their functionality does not make
 sense within <code>{shinytest2}</code>.</li>
 </ul>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">isRmd</span>()</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAppDir</span>()</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAppFilename</span>()</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>app_dir <span class="ot">&lt;-</span> new<span class="sc">$</span><span class="fu">get_dir</span>()</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>rmd_files <span class="ot">&lt;-</span> fs<span class="sc">::</span><span class="fu">dir_ls</span>(new<span class="sc">$</span><span class="fu">get_dir</span>(), <span class="at">regexp =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[Rr]md$&quot;</span>)</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>is_rmd <span class="ot">&lt;-</span> <span class="fu">length</span>(rmd_files) <span class="sc">&gt;=</span> <span class="dv">1</span></span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>app_filename <span class="ot">&lt;-</span> <span class="cf">if</span> (has_rmd) fs<span class="sc">::</span><span class="fu">path_file</span>(rmd_files[<span class="dv">1</span>]) <span class="cf">else</span> <span class="cn">NULL</span></span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">isRmd</span>()</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAppDir</span>()</span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">getAppFilename</span>()</span>
+<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a>app_dir <span class="ot">&lt;-</span> new<span class="sc">$</span><span class="fu">get_dir</span>()</span>
+<span id="cb27-8"><a href="#cb27-8" tabindex="-1"></a>rmd_files <span class="ot">&lt;-</span> fs<span class="sc">::</span><span class="fu">dir_ls</span>(new<span class="sc">$</span><span class="fu">get_dir</span>(), <span class="at">regexp =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[Rr]md$&quot;</span>)</span>
+<span id="cb27-9"><a href="#cb27-9" tabindex="-1"></a>is_rmd <span class="ot">&lt;-</span> <span class="fu">length</span>(rmd_files) <span class="sc">&gt;=</span> <span class="dv">1</span></span>
+<span id="cb27-10"><a href="#cb27-10" tabindex="-1"></a>app_filename <span class="ot">&lt;-</span> <span class="cf">if</span> (has_rmd) fs<span class="sc">::</span><span class="fu">path_file</span>(rmd_files[<span class="dv">1</span>]) <span class="cf">else</span> <span class="cn">NULL</span></span></code></pre></div>
 <ul>
 <li><code>ShinyDriver$sendKeys(name, keys)</code>: This method has been
 removed and there is currently no easy alternative. If you are familiar
@@ -964,11 +964,11 @@ with the <a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
 code values</a>, you can trigger them with <code>jQuery</code> and
 <code>AppDriver$run_js(script)</code>.</li>
 </ul>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">sendKeys</span>(<span class="st">&quot;myinput&quot;</span>, webdriver<span class="sc">::</span>keys<span class="sc">$</span>enter)</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">run_js</span>(<span class="st">&quot;$(&#39;#myinput&#39;).trigger({type: &#39;keypress&#39;, which: 13, keyCode: 13});&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="do">## {shinytest}</span></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>old<span class="sc">$</span><span class="fu">sendKeys</span>(<span class="st">&quot;myinput&quot;</span>, webdriver<span class="sc">::</span>keys<span class="sc">$</span>enter)</span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a><span class="do">## {shinytest2}</span></span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a>new<span class="sc">$</span><span class="fu">run_js</span>(<span class="st">&quot;$(&#39;#myinput&#39;).trigger({type: &#39;keypress&#39;, which: 13, keyCode: 13});&quot;</span>)</span></code></pre></div>
 </div>
 </div>
 

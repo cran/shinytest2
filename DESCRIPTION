@@ -1,6 +1,6 @@
 Package: shinytest2
 Title: Testing for Shiny Applications
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: 
     c(
         person("Barret", "Schloerke", role = c("cre", "aut"), email = "barret@rstudio.com", comment = c(ORCID = "0000-0001-9986-114X")),
@@ -14,7 +14,7 @@ Description: Automated unit testing of Shiny applications through a headless 'Ch
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 URL: https://rstudio.github.io/shinytest2/,
         https://github.com/rstudio/shinytest2
 BugReports: https://github.com/rstudio/shinytest2/issues
@@ -46,9 +46,8 @@ Collate: 'R6-helper.R' 'app-driver-chromote.R' 'app-driver-dir.R'
         'save-app.R' 'shiny-browser.R' 'shinytest2-logs.R'
         'shinytest2-package.R' 'test-app.R' 'use.R'
 LinkingTo: cpp11
-SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2022-09-26 16:11:07 UTC; barret
+Packaged: 2023-02-21 22:21:13 UTC; barret
 Author: Barret Schloerke [cre, aut] (<https://orcid.org/0000-0001-9986-114X>),
   RStudio [cph, fnd],
   Winston Chang [ctb] (Original author to rstudio/shinytest),
@@ -57,4 +56,4 @@ Author: Barret Schloerke [cre, aut] (<https://orcid.org/0000-0001-9986-114X>),
   Mango Solutions [cph, ccp] (Original author to rstudio/shinytest)
 Maintainer: Barret Schloerke <barret@rstudio.com>
 Repository: CRAN
-Date/Publication: 2022-09-26 16:40:03 UTC
+Date/Publication: 2023-02-21 22:50:02 UTC
