@@ -147,3 +147,16 @@ knitr::include_graphics("images/screenshot-recorder-random-seed.png")
 #    allow_no_input_binding_ = TRUE
 #  )
 
+## -----------------------------------------------------------------------------
+#  # helper function that wraps `set_inputs`, with  the default value for the 'dataset' component
+#  update_dataset <- function(app, value, component_id = "dataset") {
+#    checkmate::assert_choice(value, c("rock", "pressure", "cars"))
+#    ml <- rlang::list2()
+#    ml[[component_id]] <- value
+#    app$set_inputs(!!!ml)
+#  }
+#  
+#  app_dir <- system.file("examples/02_text", package = "shiny")
+#  app <- shinytest2::AppDriver$new(app_dir)
+#  update_dataset(app, "rock")
+

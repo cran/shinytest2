@@ -837,6 +837,26 @@ into a single <code>set_inputs</code> call, such as this:</p>
 <span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a>  <span class="at">allow_no_input_binding_ =</span> <span class="cn">TRUE</span></span>
 <span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a>)</span></code></pre></div>
 </div>
+<div id="input-components-provided-as-variables" class="section level3">
+<h3>Input component(s) provided as variable(s)</h3>
+<p>In some cases there might be a need to provide the input components
+using the variables (not hard-coded). It’s possible as
+<code>$set_inputs()</code> uses <code>rlang::list2(...)</code> to
+process the input values. This function supports <code>!!!</code>, <a href="https://rlang.r-lib.org/reference/splice.html">the splicing
+operator</a>, so one can construct a list outside of set_inputs() and
+use it to set the input values.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="co"># helper function that wraps `set_inputs`, with  the default value for the &#39;dataset&#39; component</span></span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>update_dataset <span class="ot">&lt;-</span> <span class="cf">function</span>(app, value, <span class="at">component_id =</span> <span class="st">&quot;dataset&quot;</span>) {</span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a>  checkmate<span class="sc">::</span><span class="fu">assert_choice</span>(value, <span class="fu">c</span>(<span class="st">&quot;rock&quot;</span>, <span class="st">&quot;pressure&quot;</span>, <span class="st">&quot;cars&quot;</span>))</span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a>  ml <span class="ot">&lt;-</span> rlang<span class="sc">::</span><span class="fu">list2</span>()</span>
+<span id="cb29-5"><a href="#cb29-5" tabindex="-1"></a>  ml[[component_id]] <span class="ot">&lt;-</span> value</span>
+<span id="cb29-6"><a href="#cb29-6" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="sc">!!!</span>ml)</span>
+<span id="cb29-7"><a href="#cb29-7" tabindex="-1"></a>}</span>
+<span id="cb29-8"><a href="#cb29-8" tabindex="-1"></a></span>
+<span id="cb29-9"><a href="#cb29-9" tabindex="-1"></a>app_dir <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;examples/02_text&quot;</span>, <span class="at">package =</span> <span class="st">&quot;shiny&quot;</span>)</span>
+<span id="cb29-10"><a href="#cb29-10" tabindex="-1"></a>app <span class="ot">&lt;-</span> shinytest2<span class="sc">::</span>AppDriver<span class="sc">$</span><span class="fu">new</span>(app_dir)</span>
+<span id="cb29-11"><a href="#cb29-11" tabindex="-1"></a><span class="fu">update_dataset</span>(app, <span class="st">&quot;rock&quot;</span>)</span></code></pre></div>
+</div>
 </div>
 <div id="next" class="section level2">
 <h2>Next</h2>

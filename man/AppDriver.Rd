@@ -543,6 +543,18 @@ expect_screenshot_file(
     )
   }
 )
+
+# Take a screenshot of the entire scrollable area
+app$expect_screenshot()
+app$expect_screenshot(selector = "scrollable_area")
+
+## Take a screenshot of the current viewport
+# Shrink the window to be smaller than the app
+app$set_window_size(400, 500)
+# Scroll the viewport just a bit
+app$run_js("window.scroll(30, 70)")
+# Take screenshot of browser viewport
+app$expect_screenshot(selector = "viewport")
 }
 
 ## ------------------------------------------------
@@ -1392,7 +1404,7 @@ missing, the default value will be
 
 The final value can either be:
 \itemize{
-\item \code{TRUE}: A screenshot of the whole page will be taken with no delay
+\item \code{TRUE}: A screenshot of the browser's scrollable area will be taken with no delay
 \item \code{FALSE}: No screenshot will be taken
 \item A named list of arguments. These arguments are passed directly to
 \code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. The \code{selector}
@@ -2188,7 +2200,10 @@ recommended to use other expectation methods.
 
 \item{\code{threshold}}{Parameter supplied to \code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}}
 when using the default \code{compare} method. If the value of \code{threshold} is
-NULL\verb{, [}compare_screenshot_threshold()\verb{] will act like [}testthat::compare_file_binary\verb{]. However, if }threshold\verb{ is a positive number, it will be compared against the largest convolution value found if the two images fail a [}testthat::compare_file_binary`] comparison.
+\code{NULL}, \code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}} will act like
+\code{\link[testthat:expect_snapshot_file]{testthat::compare_file_binary}}. However, if \code{threshold} is a positive number,
+it will be compared against the largest convolution value found if the
+two images fail a \code{\link[testthat:expect_snapshot_file]{testthat::compare_file_binary}} comparison.
 
 Which value should I use? Threshold values values below 5 help deter
 false-positive screenshot comparisons (such as inconsistent rounded
@@ -2205,16 +2220,27 @@ differences. This integer-like value should be relatively small.}
 \code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. If missing, the
 value will default to \verb{$new(screenshot_args=)}.
 
-If the value is:
+If \code{screenshot_args} is:
 \itemize{
-\item \code{TRUE}: A screenshot of the whole page will be taken with no delay
+\item \code{TRUE}: A screenshot of the browser's scrollable area will be taken with no delay
 \item A named list of arguments: Arguments passed directly to
-\code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. The \code{selector}
-and \code{delay} will default to \code{"html"} and \code{0} respectively.
+\code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. The \code{delay}
+argument will default to \code{0} seconds. The \code{selector} argument can take two
+special values in addition to being a CSS DOM selector.
+\itemize{
+\item \code{"scrollable_area"} (default): The entire scrollable area will be
+captured. Typically this is your browser's viewport size, but it
+can be larger if the page is scrollable. This value works well with
+Apps that contain elements whose calculated dimensions may be
+different than their presented size.
+\item \code{"viewport"}: This value will capture the browser's viewport in its
+current viewing location, height, and width. It will only capture
+what is currently being seen with \verb{$view()}.
 }
 
-If \code{FALSE} is provided, the parameter will be ignored and a
-screenshot will be taken with default behavior.}
+In \code{v0.3.0}, the default \code{selector} value was changed from the HTML DOM
+selector (\code{"html"}) to entire scrollable area (\code{"scrollable_area"}).
+}}
 
 \item{\code{delay}}{The number of \strong{seconds} to wait before taking the screenshot.
 This value can be supplied as \code{delay} or \code{screenshot_args$delay}, with the
@@ -2223,7 +2249,22 @@ This value can be supplied as \code{delay} or \code{screenshot_args$delay}, with
 \item{\code{selector}}{The selector is a CSS selector that will be used to select a
 portion of the page to be captured. This value can be supplied as
 \code{selector} or \code{screenshot_args$selector}, with the \code{selector} parameter
-having preference.}
+having preference.
+
+In \code{v0.3.0}, two special \code{selector} values were added:
+\itemize{
+\item \code{"scrollable_area"} (default): The entire scrollable area will be
+captured. Typically this is your browser's viewport size, but it can be
+larger if the page is scrollable. This value works well with Apps that
+contain elements whose calculated dimensions may be different than their
+presented size.
+\item \code{"viewport"}: This value will capture the browser's viewport in its
+current viewing location, height, and width. It will only capture
+what is currently being seen with \verb{$view()}.
+}
+
+In \code{v0.3.0}, the default \code{selector} value was changed from the HTML DOM
+selector (\code{"html"}) to entire scrollable area (\code{"scrollable_area"}).}
 
 \item{\code{compare}}{A function used to compare the screenshot snapshot files.
 The function should take two inputs, the paths to the \code{old} and \code{new}
@@ -2299,6 +2340,18 @@ expect_screenshot_file(
     )
   }
 )
+
+# Take a screenshot of the entire scrollable area
+app$expect_screenshot()
+app$expect_screenshot(selector = "scrollable_area")
+
+## Take a screenshot of the current viewport
+# Shrink the window to be smaller than the app
+app$set_window_size(400, 500)
+# Scroll the viewport just a bit
+app$run_js("window.scroll(30, 70)")
+# Take screenshot of browser viewport
+app$expect_screenshot(selector = "viewport")
 }
 }
 \if{html}{\out{</div>}}
@@ -2336,14 +2389,29 @@ that file.}
 \code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. If missing, the
 value will default to \verb{$new(screenshot_args=)}.
 
-If the value is:
+If \code{screenshot_args} is:
 \itemize{
-\item \code{TRUE}: A screenshot of the whole page will be taken with no delay
-\item A named list of arguments: Arguments passed directly to \code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s
-\verb{$get_screenshot()} method. The \code{selector} and \code{delay} will default to \code{"html"} and \code{0} respectively.
+\item \code{TRUE}: A screenshot of the browser's scrollable area will be taken with no delay
+\item A named list of arguments: Arguments passed directly to
+\code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. The \code{delay}
+argument will default to \code{0} seconds. The \code{selector} argument can take two
+special values in addition to being a CSS DOM selector.
+\itemize{
+\item \code{"scrollable_area"} (default): The entire scrollable area will be
+captured. Typically this is your browser's viewport size, but it can be
+larger if the page is scrollable. This value works well with Apps that
+contain elements whose calculated dimensions may be different than
+their presented size.
+\item \code{"viewport"}: This value will capture the browser's viewport in its
+current viewing location, height, and width. It will only capture
+what is currently being seen with \verb{$view()}.
 }
 
-If a \code{FALSE} value is provided, the parameter will be ignored and a
+In \code{v0.3.0}, the default \code{selector} value was changed from the HTML DOM
+selector (\code{"html"}) to entire scrollable area (\code{"scrollable_area"}).
+}
+
+If \code{screenshot_args=FALSE} is provided, the parameter will be ignored and a
 screenshot will be taken with default behavior.}
 
 \item{\code{delay}}{The number of \strong{seconds} to wait before taking the screenshot.
@@ -2353,7 +2421,22 @@ This value can be supplied as \code{delay} or \code{screenshot_args$delay}, with
 \item{\code{selector}}{The selector is a CSS selector that will be used to select a
 portion of the page to be captured. This value can be supplied as
 \code{selector} or \code{screenshot_args$selector}, with the \code{selector} parameter
-having preference.}
+having preference.
+
+In \code{v0.3.0}, two special \code{selector} values were added:
+\itemize{
+\item \code{"scrollable_area"} (default): The entire scrollable area will be
+captured. Typically this is your browser's viewport size, but it can be
+larger if the page is scrollable. This value works well with Apps that
+contain elements whose calculated dimensions may be different than their
+presented size.
+\item \code{"viewport"}: This value will capture the browser's viewport in its
+current viewing location, height, and width. It will only capture
+what is currently being seen with \verb{$view()}.
+}
+
+In \code{v0.3.0}, the default \code{selector} value was changed from the HTML DOM
+selector (\code{"html"}) to entire scrollable area (\code{"scrollable_area"}).}
 }
 \if{html}{\out{</div>}}
 }

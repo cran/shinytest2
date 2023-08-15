@@ -1,13 +1,13 @@
 Package: shinytest2
 Title: Testing for Shiny Applications
-Version: 0.2.1
+Version: 0.3.0
 Authors@R: 
     c(
-        person("Barret", "Schloerke", role = c("cre", "aut"), email = "barret@rstudio.com", comment = c(ORCID = "0000-0001-9986-114X")),
-        person(family = "RStudio", role = c("cph", "fnd")),
-        person("Winston", "Chang", role ="ctb", email = "winston@rstudio.com", comment = "Original author to rstudio/shinytest"),
-        person("Gábor", "Csárdi", role = "ctb", email = "gabor@rstudio.com", comment = "Original author to rstudio/shinytest"),
-        person("Hadley", "Wickham", role = "ctb", email = "hadley@rstudio.com", comment = "Original author to rstudio/shinytest"),
+        person("Barret", "Schloerke", role = c("cre", "aut"), email = "barret@posit.co", comment = c(ORCID = "0000-0001-9986-114X")),
+        person(family = "Posit Software, PBC", role = c("cph", "fnd")),
+        person("Winston", "Chang", role ="ctb", email = "winston@posit.co", comment = "Original author to rstudio/shinytest"),
+        person("Gábor", "Csárdi", role = "ctb", email = "gabor@posit.co", comment = "Original author to rstudio/shinytest"),
+        person("Hadley", "Wickham", role = "ctb", email = "hadley@posit.co", comment = "Original author to rstudio/shinytest"),
         person(family = "Mango Solutions", role = c("cph", "ccp"), comment = "Original author to rstudio/shinytest")
     )
 Description: Automated unit testing of Shiny applications through a headless 'Chromium' browser.
@@ -21,7 +21,7 @@ BugReports: https://github.com/rstudio/shinytest2/issues
 VignetteBuilder: knitr
 Depends: testthat (>= 3.1.2)
 Imports: R6 (>= 2.4.0), callr, checkmate (>= 2.0.0), chromote (>=
-        0.1.0), crayon, ellipsis, fs, globals (>= 0.14.0), httr,
+        0.1.2), crayon, ellipsis, fs, globals (>= 0.14.0), httr,
         jsonlite, pingr, rlang (>= 0.3.0), rmarkdown, shiny, withr
 Suggests: deSolve, diffobj, ggplot2, knitr, plotly, png, rstudioapi,
         shinyWidgets, shinytest (>= 1.5.1), shinyvalidate (>= 0.1.2),
@@ -47,13 +47,13 @@ Collate: 'R6-helper.R' 'app-driver-chromote.R' 'app-driver-dir.R'
         'shinytest2-package.R' 'test-app.R' 'use.R'
 LinkingTo: cpp11
 NeedsCompilation: yes
-Packaged: 2023-02-21 22:21:13 UTC; barret
+Packaged: 2023-08-14 15:35:30 UTC; cpsievert
 Author: Barret Schloerke [cre, aut] (<https://orcid.org/0000-0001-9986-114X>),
-  RStudio [cph, fnd],
+  Posit Software, PBC [cph, fnd],
   Winston Chang [ctb] (Original author to rstudio/shinytest),
   Gábor Csárdi [ctb] (Original author to rstudio/shinytest),
   Hadley Wickham [ctb] (Original author to rstudio/shinytest),
   Mango Solutions [cph, ccp] (Original author to rstudio/shinytest)
-Maintainer: Barret Schloerke <barret@rstudio.com>
+Maintainer: Barret Schloerke <barret@posit.co>
 Repository: CRAN
-Date/Publication: 2023-02-21 22:50:02 UTC
+Date/Publication: 2023-08-15 07:30:03 UTC
