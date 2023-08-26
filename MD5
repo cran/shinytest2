@@ -1,7 +1,7 @@
-064632dda5a36661fc7cbc519a22b10e *DESCRIPTION
+0c3adadbaa50244e497c3e6f3f4480e7 *DESCRIPTION
 416ceee633f90fcbe11b511a2b0dca24 *LICENSE
 e6dec88425dbeaf7402e48abefa39245 *NAMESPACE
-fa1475f6c64a331f9865f33e83f78106 *NEWS.md
+34452978969dafba1fad99b403d64d0a *NEWS.md
 613cd2e3ed099462e044a36052d12eb6 *R/R6-helper.R
 8897ae40af74bd10b7e884e45cbf5988 *R/app-driver-chromote.R
 98448464da2f6ba3e5a46f9088744029 *R/app-driver-dir.R
@@ -24,7 +24,7 @@ bc4bdfdb798b67777fa37b70425e559d *R/app-driver-start.R
 fb528d2f4ef601aa2f367944684a007e *R/app-driver-wait.R
 d227c0b2d5a8dbef070e1d0f731a911a *R/app-driver-window.R
 6023c7de9ccfae7b2c4f58a00541ead8 *R/app-driver.R
-b8ac8908affbad6853f7265cf68054b2 *R/chromote-methods.R
+ceb13e80dd196aaf5dd366804a190588 *R/chromote-methods.R
 c0c8d0281a1281bf7bc31ed0b540ddcb *R/compare-screenshot-threshold.R
 ae262ded13a11fe6e26220d631af4177 *R/cpp11.R
 12d0cc544703a7edbbb0944c48044df2 *R/expect-snapshot.R
@@ -117,7 +117,7 @@ bfa3b6e878726f169309fd655f3893cd *tests/testthat/scripts/pr_307.R
 933191c8b09d1902ce534aceb019dc8d *tests/testthat/setup-disable-crashpad.R
 c9af317edbc86f4308a0352ca3411be1 *tests/testthat/test-app-duplicate-ids.R
 1a93b68011a7fde5a781699c31e0527c *tests/testthat/test-app-eval-js.R
-e3c29ecada032f6d84967c6f56215f37 *tests/testthat/test-app-screenshot-size.R
+b8513c50a293c10b06acfbf50f5ee47b *tests/testthat/test-app-screenshot-size.R
 8bed25621635cce903697f37a245bdf0 *tests/testthat/test-app-shiny.R
 0235e7d6265fc14dd933efc574afe842 *tests/testthat/test-app-stop.R
 de336f46427c05b3d1669e0cd5501a97 *tests/testthat/test-app-timeout.R
