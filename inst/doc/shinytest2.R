@@ -4,7 +4,7 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ## -----------------------------------------------------------------------------
 #  install.packages("shinytest2")
 
-## ---- code = readLines('simple-app/app.R')------------------------------------
+## ----code = readLines('simple-app/app.R')-------------------------------------
 #  library(shiny)
 #  ui <- fluidPage(
 #    textInput("name", "What is your name?"),
