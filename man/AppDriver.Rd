@@ -47,7 +47,7 @@ retrieved after any initialization error has been thrown.
 
 Reactive values from within your Shiny application can be exported using the
 method:
-\href{https://shiny.rstudio.com/reference/shiny/latest/exportTestValues.html}{\code{shiny::exportTestValues()}}.
+\href{https://shiny.posit.co/r/reference/shiny/latest/exporttestvalues.html}{\code{shiny::exportTestValues()}}.
 This underutilized method exposes internal values of your app
 without needing to create a corresponding input value or output value.
 
@@ -105,14 +105,15 @@ eventually wrap \code{\link[testthat:expect_snapshot_file]{testthat::expect_snap
 
 Their underlying logic is similar to:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{## Expect values
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{skip_on_cran() # AppDriver
+
+## Expect values
 tmpfile <- tempfile(fileext = ".json")
 jsonlite::write_json(app$get_values(), tmpfile)
 expect_snapshot_file(
   tmpfile,
   variant = app$get_variant(),
-  compare = testthat::compare_file_text,
-  cran = cran
+  compare = testthat::compare_file_text
 )
 
 
@@ -122,8 +123,7 @@ app$get_screenshot(tmpfile)
 expect_snapshot_file(
   tmpfile,
   variant = app$get_variant(),
-  compare = testthat::compare_file_binary,
-  cran = cran
+  compare = testthat::compare_file_binary
 )
 }\if{html}{\out{</div>}}
 
@@ -1135,11 +1135,11 @@ screenshots by default, set to \code{FALSE}.}
 initially loads? If duplicate names are found on initialization, a
 warning will be displayed.}
 
-\item{\code{view}}{Opens the \code{\link{ChromoteSession}} in an interactive browser tab
+\item{\code{view}}{Opens the \code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}} in an interactive browser tab
 before attempting to navigate to the Shiny app.}
 
 \item{\code{height, width}}{Window size to use when opening the
-\code{\link{ChromoteSession}}. Both \code{height} and \code{width} values must be non-null
+\code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}. Both \code{height} and \code{width} values must be non-null
 values to be used.}
 
 \item{\code{clean_logs}}{Whether to remove the \code{stdout} and \code{stderr} Shiny app
@@ -1186,7 +1186,7 @@ app$expect_values()
 \subsection{Method \code{view()}}{
 View the Shiny application
 
-Calls \verb{$view()} on the \code{\link{ChromoteSession}} object to \emph{view} your Shiny
+Calls \verb{$view()} on the \code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}} object to \emph{view} your Shiny
 application in a Chrome browser.
 
 This method is very helpful for debugging while writing your tests.
@@ -1379,7 +1379,8 @@ Please see \href{https://rstudio.github.io/shinytest2/articles/robust.html}{Robu
   export = missing_arg(),
   screenshot_args = missing_arg(),
   name = NULL,
-  cran = FALSE
+  transform = transform,
+  cran = deprecated()
 )}\if{html}{\out{</div>}}
 }
 
@@ -1415,9 +1416,12 @@ and \code{delay} will default to \code{"html"} and \code{0} respectively.
 will be overwritten to \code{.json}. By default, the \code{name} supplied to
 \code{app} on initialization with a counter will be used (e.g. \code{"NAME-001.json"}).}
 
-\item{\code{cran}}{Should these expectations be verified on CRAN? By default,
-they are not because snapshot tests tend to be fragile
-because they often rely on minor details of dependencies.}
+\item{\code{transform}}{Optionally, a function to scrub sensitive or stochastic text
+from the output. Should take a character vector of lines as input and
+return a modified character vector as output.}
+
+\item{\code{cran}}{Deprecated. With \code{AppDriver} never testing on CRAN,
+this parameter no longer has any effect.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1645,7 +1649,8 @@ file will be downloaded and saved as a snapshot file.
   ...,
   compare = NULL,
   name = NULL,
-  cran = FALSE
+  transform = NULL,
+  cran = deprecated()
 )}\if{html}{\out{</div>}}
 }
 
@@ -1665,9 +1670,12 @@ has extension \code{.r}, \code{.R}, \code{.Rmd}, \code{.md}, or \code{.txt}, and
 generates an ascending sequence of names: \verb{001.download},
 \verb{002.download}, etc.}
 
-\item{\code{cran}}{Should these expectations be verified on CRAN? By default,
-they are not because snapshot tests tend to be fragile
-because they often rely on minor details of dependencies.}
+\item{\code{transform}}{Optionally, a function to scrub sensitive or stochastic text
+from the output. Should take a character vector of lines as input and
+return a modified character vector as output.}
+
+\item{\code{cran}}{Deprecated. With \code{AppDriver} never testing on CRAN,
+this parameter no longer has any effect.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1761,7 +1769,7 @@ of \code{TAG.textContent} values found will be stored in a snapshot file.
 
 Please see \href{https://rstudio.github.io/shinytest2/articles/robust.html}{Robust testing} for more details.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AppDriver$expect_text(selector, ..., cran = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AppDriver$expect_text(selector, ..., cran = deprecated())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1771,9 +1779,8 @@ Please see \href{https://rstudio.github.io/shinytest2/articles/robust.html}{Robu
 
 \item{\code{...}}{Must be empty. Allows for parameter expansion.}
 
-\item{\code{cran}}{Should these expectations be verified on CRAN? By default,
-they are not because snapshot tests tend to be fragile
-because they often rely on minor details of dependencies.}
+\item{\code{cran}}{Deprecated. With \code{AppDriver} never testing on CRAN,
+this parameter no longer has any effect.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1852,7 +1859,7 @@ of \code{TAG.textContent} values found will be stored in a snapshot file.
 
 Please see \href{https://rstudio.github.io/shinytest2/articles/robust.html}{Robust testing} for more details.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AppDriver$expect_html(selector, ..., outer_html = TRUE, cran = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AppDriver$expect_html(selector, ..., outer_html = TRUE, cran = deprecated())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1865,9 +1872,8 @@ Please see \href{https://rstudio.github.io/shinytest2/articles/robust.html}{Robu
 \item{\code{outer_html}}{If \code{TRUE} (default), the full DOM structure will be returned (\code{TAG.outerHTML}).
 If \code{FALSE}, the full DOM structure of the child elements will be returned (\code{TAG.innerHTML}).}
 
-\item{\code{cran}}{Should these expectations be verified on CRAN? By default,
-they are not because snapshot tests tend to be fragile
-because they often rely on minor details of dependencies.}
+\item{\code{cran}}{Deprecated. With \code{AppDriver} never testing on CRAN,
+this parameter no longer has any effect.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1955,7 +1961,7 @@ Once the \code{script} has executed, the JSON result will be saved to a snapshot
   file = missing_arg(),
   timeout = missing_arg(),
   pre_snapshot = NULL,
-  cran = FALSE
+  cran = deprecated()
 )}\if{html}{\out{</div>}}
 }
 
@@ -1974,9 +1980,8 @@ Defaults to the resolved \code{timeout} value during the \code{AppDriver} initia
 \item{\code{pre_snapshot}}{A function to be called on the result of the script before taking the snapshot.
 \verb{$expect_html()} and \verb{$expect_text()} both use \code{\link[=unlist]{unlist()}}.}
 
-\item{\code{cran}}{Should these expectations be verified on CRAN? By default,
-they are not because snapshot tests tend to be fragile
-because they often rely on minor details of dependencies.}
+\item{\code{cran}}{Deprecated. With \code{AppDriver} never testing on CRAN,
+this parameter no longer has any effect.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2181,15 +2186,15 @@ recommended to use other expectation methods.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AppDriver$expect_screenshot(
   ...,
-  threshold = NULL,
-  kernel_size = 5,
+  threshold = getOption("shinytest2.compare_screenshot.threshold", NULL),
+  kernel_size = getOption("shinytest2.compare_screenshot.kernel_size", 5),
   screenshot_args = missing_arg(),
   delay = missing_arg(),
   selector = missing_arg(),
   compare = missing_arg(),
   quiet = FALSE,
   name = NULL,
-  cran = FALSE
+  cran = deprecated()
 )}\if{html}{\out{</div>}}
 }
 
@@ -2199,22 +2204,28 @@ recommended to use other expectation methods.
 \item{\code{...}}{Must be empty. Allows for parameter expansion.}
 
 \item{\code{threshold}}{Parameter supplied to \code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}}
-when using the default \code{compare} method. If the value of \code{threshold} is
-\code{NULL}, \code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}} will act like
-\code{\link[testthat:expect_snapshot_file]{testthat::compare_file_binary}}. However, if \code{threshold} is a positive number,
-it will be compared against the largest convolution value found if the
-two images fail a \code{\link[testthat:expect_snapshot_file]{testthat::compare_file_binary}} comparison.
+when using the default \code{compare} method. The default value can be set
+globally with the \code{shinytest2.compare_screenshot.threshold} option.
+
+If the value of \code{threshold} is \code{NULL},
+\code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}} will act like
+\code{\link[testthat:expect_snapshot_file]{testthat::compare_file_binary}}. However, if \code{threshold} is a
+positive number, it will be compared against the largest convolution
+value found if the two images fail a \code{\link[testthat:expect_snapshot_file]{testthat::compare_file_binary}}
+comparison.
 
 Which value should I use? Threshold values values below 5 help deter
 false-positive screenshot comparisons (such as inconsistent rounded
 corners). Larger values in the 10s and 100s will help find \emph{real}
-changes. However, not all values are one size fits all and you will need
-to play with a threshold that fits your needs.}
+changes. However, not all values are one size fits all and you will
+need to play with a threshold that fits your needs.}
 
-\item{\code{kernel_size}}{Parameter supplied to \code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}}
-when using the default \code{compare} method. The \code{kernel_size} represents the
-height and width of the convolution kernel applied to the pixel
-differences. This integer-like value should be relatively small.}
+\item{\code{kernel_size}}{Parameter supplied to
+\code{\link[=compare_screenshot_threshold]{compare_screenshot_threshold()}} when using the default \code{compare}
+method. The \code{kernel_size} represents the height and width of the
+convolution kernel applied to the pixel differences. This integer-like
+value should be relatively small. The default value can be set globally
+with the \code{shinytest2.compare_screenshot.kernel_size} option.}
 
 \item{\code{screenshot_args}}{This named list of arguments is passed along to
 \code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. If missing, the
@@ -2222,11 +2233,12 @@ value will default to \verb{$new(screenshot_args=)}.
 
 If \code{screenshot_args} is:
 \itemize{
-\item \code{TRUE}: A screenshot of the browser's scrollable area will be taken with no delay
+\item \code{TRUE}: A screenshot of the browser's scrollable area will be taken
+with no delay
 \item A named list of arguments: Arguments passed directly to
-\code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. The \code{delay}
-argument will default to \code{0} seconds. The \code{selector} argument can take two
-special values in addition to being a CSS DOM selector.
+\code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}}'s \verb{$get_screenshot()} method. The
+\code{delay} argument will default to \code{0} seconds. The \code{selector} argument
+can take two special values in addition to being a CSS DOM selector.
 \itemize{
 \item \code{"scrollable_area"} (default): The entire scrollable area will be
 captured. Typically this is your browser's viewport size, but it
@@ -2238,8 +2250,9 @@ current viewing location, height, and width. It will only capture
 what is currently being seen with \verb{$view()}.
 }
 
-In \code{v0.3.0}, the default \code{selector} value was changed from the HTML DOM
-selector (\code{"html"}) to entire scrollable area (\code{"scrollable_area"}).
+In \code{v0.3.0}, the default \code{selector} value was changed from the HTML
+DOM selector (\code{"html"}) to entire scrollable area
+(\code{"scrollable_area"}).
 }}
 
 \item{\code{delay}}{The number of \strong{seconds} to wait before taking the screenshot.
@@ -2285,9 +2298,8 @@ non-\code{NULL} \code{threshold} value.}
 will overwritten to \code{.png}. By default, the \code{name} supplied to
 \code{app} on initialization with a counter will be used (e.g. \code{"NAME-001.png"}).}
 
-\item{\code{cran}}{Should these expectations be verified on CRAN? By default,
-they are not because snapshot tests tend to be fragile
-because they often rely on minor details of dependencies.}
+\item{\code{cran}}{Deprecated. With \code{AppDriver} never testing on CRAN,
+this parameter no longer has any effect.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2887,13 +2899,13 @@ app$get_window_size()
 \subsection{Method \code{get_chromote_session()}}{
 Get Chromote Session
 
-Get the \code{\link{ChromoteSession}} object from the \pkg{chromote} package.
+Get the \code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}} object from the \pkg{chromote} package.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AppDriver$get_chromote_session()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
-\code{\link{ChromoteSession}} R6 object
+\code{\link[chromote:ChromoteSession]{chromote::ChromoteSession}} R6 object
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}

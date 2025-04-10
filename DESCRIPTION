@@ -1,6 +1,6 @@
 Package: shinytest2
 Title: Testing for Shiny Applications
-Version: 0.3.2
+Version: 0.4.0
 Authors@R: 
     c(
         person("Barret", "Schloerke", role = c("cre", "aut"), email = "barret@posit.co", comment = c(ORCID = "0000-0001-9986-114X")),
@@ -14,19 +14,19 @@ Description: Automated unit testing of Shiny applications through a headless 'Ch
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 URL: https://rstudio.github.io/shinytest2/,
         https://github.com/rstudio/shinytest2
 BugReports: https://github.com/rstudio/shinytest2/issues
 VignetteBuilder: knitr
 Depends: testthat (>= 3.1.2)
 Imports: R6 (>= 2.4.0), callr, checkmate (>= 2.0.0), chromote (>=
-        0.1.2), crayon, fs, globals (>= 0.14.0), httr, jsonlite, pingr,
-        rlang (>= 1.0.0), rmarkdown, shiny, withr
+        0.5.0), cli, fs, globals (>= 0.14.0), httr, jsonlite, pingr,
+        rlang (>= 1.0.0), rmarkdown, shiny, withr, lifecycle
 Suggests: deSolve, diffobj, ggplot2, knitr, plotly, png, rstudioapi,
         shinyWidgets, shinytest (>= 1.5.1), shinyvalidate (>= 0.1.2),
         showimage, usethis, vdiffr (>= 1.0.0), spelling
-Config/Needs/check: rstudio/shiny
+Config/Needs/check: rstudio/shiny, bslib
 Config/Needs/website: pkgdown, tidyverse/tidytemplate
 Config/testthat/edition: 3
 Collate: 'R6-helper.R' 'app-driver-chromote.R' 'app-driver-dir.R'
@@ -47,7 +47,7 @@ Collate: 'R6-helper.R' 'app-driver-chromote.R' 'app-driver-dir.R'
         'shinytest2-package.R' 'test-app.R' 'use.R'
 LinkingTo: cpp11
 NeedsCompilation: yes
-Packaged: 2024-04-26 19:24:28 UTC; garrick
+Packaged: 2025-04-10 02:52:55 UTC; barret
 Author: Barret Schloerke [cre, aut] (<https://orcid.org/0000-0001-9986-114X>),
   Posit Software, PBC [cph, fnd],
   Winston Chang [ctb] (Original author to rstudio/shinytest),
@@ -56,4 +56,4 @@ Author: Barret Schloerke [cre, aut] (<https://orcid.org/0000-0001-9986-114X>),
   Mango Solutions [cph, ccp] (Original author to rstudio/shinytest)
 Maintainer: Barret Schloerke <barret@posit.co>
 Repository: CRAN
-Date/Publication: 2024-04-28 21:40:03 UTC
+Date/Publication: 2025-04-10 08:40:02 UTC

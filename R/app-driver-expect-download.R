@@ -1,6 +1,6 @@
-
 app_download <- function(
-  self, private,
+  self,
+  private,
   output,
   name = NULL,
   save_dir = tempdir(),
@@ -25,11 +25,18 @@ app_download <- function(
   # Find suggested name
   content_dispo <- httr::headers(req)[["content-disposition"]]
   filename_header <- NULL
-  if (length(content_dispo) == 1 && is.character(content_dispo) && nzchar(content_dispo)) {
+  if (
+    length(content_dispo) == 1 &&
+      is.character(content_dispo) &&
+      nzchar(content_dispo)
+  ) {
     vals <- strsplit(content_dispo, "filename=")[[1]]
     if (length(vals) > 1) {
       filename_header <- gsub("\"", "", vals[2], fixed = TRUE)
-      self$log_message(paste0("Content disposition file name: ", filename_header))
+      self$log_message(paste0(
+        "Content disposition file name: ",
+        filename_header
+      ))
     }
   }
 
@@ -84,13 +91,14 @@ app_expect_download <- function(
   ...,
   compare = NULL,
   name = NULL,
-  cran = FALSE
+  transform = NULL
 ) {
   ckm8_assert_app_driver(self, private)
   rlang::check_dots_empty()
 
   snapshot_info <- app_download(
-    self, private,
+    self,
+    private,
     output = output,
     name = name,
     # Save within temp app dir
@@ -101,9 +109,10 @@ app_expect_download <- function(
 
   # Compare download_file content
   app__expect_snapshot_file(
-    self, private,
+    self,
+    private,
     snapshot_info$download_path,
-    cran = cran,
+    transform = transform,
     compare = compare
   )
 
@@ -111,9 +120,9 @@ app_expect_download <- function(
   requested_download_name <- snapshot_info$filename_header
   if (!is.null(requested_download_name)) {
     app__expect_snapshot_value(
-      self, private,
-      requested_download_name,
-      cran = cran
+      self,
+      private,
+      requested_download_name
     )
   }
 
@@ -122,7 +131,8 @@ app_expect_download <- function(
 
 
 app_get_download <- function(
-  self, private,
+  self,
+  private,
   output,
   filename = NULL
 ) {
@@ -140,7 +150,8 @@ app_get_download <- function(
   }
 
   snapshot_info <- app_download(
-    self, private,
+    self,
+    private,
     output = output,
     name = name,
     save_dir = save_dir,
