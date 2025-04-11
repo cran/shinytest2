@@ -1,7 +1,7 @@
-cac8cf9b2e72327ddd27bf5ac5667120 *DESCRIPTION
+3cc864b43f8f77df2821c72911f7c6ac *DESCRIPTION
 416ceee633f90fcbe11b511a2b0dca24 *LICENSE
 3a0d4f61bfb3eafa2bbff1b676bbfe9a *NAMESPACE
-43ab6e7c0f15c50d7f5e3e53b9bcbb8c *NEWS.md
+f68da23666446c05c724cad8e3355900 *NEWS.md
 613cd2e3ed099462e044a36052d12eb6 *R/R6-helper.R
 8897ae40af74bd10b7e884e45cbf5988 *R/app-driver-chromote.R
 98448464da2f6ba3e5a46f9088744029 *R/app-driver-dir.R
@@ -23,7 +23,7 @@ b0972d2a5631e02c57c450ba0ce91005 *R/app-driver-start.R
 57ceccbaeda0ed4758b59b18d47252b8 *R/app-driver-variant.R
 a8dcdbdf20dce1221980674e0f26e193 *R/app-driver-wait.R
 d227c0b2d5a8dbef070e1d0f731a911a *R/app-driver-window.R
-eae031e40578a1c7e203b8f3cdc40427 *R/app-driver.R
+206a2b54e81649a20249f4450d98380c *R/app-driver.R
 4d413860b38f7f4034ace1d279d01bb1 *R/chromote-methods.R
 2468b29a6ffc1f6b175230598605fb32 *R/compare-screenshot-threshold.R
 ae262ded13a11fe6e26220d631af4177 *R/cpp11.R
@@ -95,7 +95,7 @@ e67d2b59a755dbd1ca12fc3c12d98d38 *inst/internal/recorder/www/inject-recorder.js
 935f216b013d0914cf23ab906e88f3a8 *inst/internal/template/testthat.R
 f2eaa43d8cec54b250eb8a63d6b4908d *inst/internal/template/unused/DESCRIPTION
 bff9849d04cbc8c90b62aa93c6d74ddf *inst/vig-apps/non-optimized-app/app.R
-ff0f288618119cf56f69eb7ec1fb3279 *man/AppDriver.Rd
+2ba32f0519937abaa43fd57f5570f1b2 *man/AppDriver.Rd
 cc6c82d5620361ebfd57f3af30d201a2 *man/compare_screenshot_threshold.Rd
 423cf1e85a7da35c509805779b74ff86 *man/figures/logo.svg
 85f4840e477d740ed3490303a2f9aa6d *man/load_app_env.Rd
