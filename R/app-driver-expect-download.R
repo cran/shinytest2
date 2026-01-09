@@ -20,10 +20,10 @@ app_download <- function(
 
   # Add the base location to the URL
   full_url <- paste0(private$shiny_url$get(), sub_url)
-  req <- app_httr_get(self, private, full_url)
+  req <- app_httr2_get(self, private, full_url)
 
   # Find suggested name
-  content_dispo <- httr::headers(req)[["content-disposition"]]
+  content_dispo <- httr2::resp_headers(req)[["content-disposition"]]
   filename_header <- NULL
   if (
     length(content_dispo) == 1 &&
@@ -75,7 +75,7 @@ app_download <- function(
     fs::path_sanitize(filename, "_")
   )
   # Save contents
-  writeBin(req$content, download_path)
+  writeBin(httr2::resp_body_raw(req), download_path)
 
   list(
     download_path = download_path,
@@ -95,6 +95,11 @@ app_expect_download <- function(
 ) {
   ckm8_assert_app_driver(self, private)
   rlang::check_dots_empty()
+
+  ## Announce snapshot file
+  # Cannot announce before download because we need the filename
+  # from the Content-Disposition header... which is after we download the file
+  # Therefore, we cannot announce the testthat file
 
   snapshot_info <- app_download(
     self,

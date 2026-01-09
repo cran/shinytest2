@@ -30,21 +30,32 @@ app_get_single_ioe <- function(
     )
   }
 
-  if (input_is_provided) ckm8_assert_single_string(input) else if (
-    output_is_provided
-  )
-    ckm8_assert_single_string(output) else if (export_is_provided)
-    ckm8_assert_single_string(export) else
+  if (input_is_provided) {
+    ckm8_assert_single_string(input)
+  } else if (output_is_provided) {
+    ckm8_assert_single_string(output)
+  } else if (export_is_provided) {
+    ckm8_assert_single_string(export)
+  } else {
     app_abort(self, private, "Missing ioe type", .internal = TRUE)
+  }
 
   type <-
-    if (input_is_provided) "input" else if (output_is_provided)
-      "output" else if (export_is_provided) "export"
+    if (input_is_provided) {
+      "input"
+    } else if (output_is_provided) {
+      "output"
+    } else if (export_is_provided) {
+      "export"
+    }
   name <-
-    if (input_is_provided) input else if (output_is_provided) output else if (
-      export_is_provided
-    )
+    if (input_is_provided) {
+      input
+    } else if (output_is_provided) {
+      output
+    } else if (export_is_provided) {
       export
+    }
 
   list(
     input = input,
@@ -113,7 +124,7 @@ app_get_values <- function(
 
   # Ask Shiny for info
   cur_env <- rlang::current_env()
-  req <- app_httr_get(self, private, url, fn_404 = function(req) {
+  req <- app_httr2_get(self, private, url, fn_404 = function(req) {
     app_abort(
       self,
       private,
@@ -157,7 +168,7 @@ app_get_values <- function(
 
   tmpfile <- tempfile()
   on.exit(unlink(tmpfile), add = TRUE)
-  writeBin(req$content, tmpfile)
+  writeBin(httr2::resp_body_raw(req), tmpfile)
   values <- readRDS(tmpfile)
 
   if (hash_images) {
@@ -193,6 +204,17 @@ app_expect_values <- function(
   )
 
   json_path <- app_next_temp_snapshot_path(self, private, name, "json")
+  # `NAME.json` -> `NAME_.png`; `NAME_.new.png`
+  png_path <-
+    fs::path_ext_set(
+      paste0(fs::path_ext_remove(json_path), "_"),
+      "png"
+    )
+
+  # Announce snapshot file before touching before any other expressions can fail
+  testthat::local_edition(3)
+  testthat::announce_snapshot_file(json_path)
+  testthat::announce_snapshot_file(png_path)
 
   url <- app_get_shiny_test_url(
     self,
@@ -204,7 +226,7 @@ app_expect_values <- function(
   )
   # Ask Shiny for info
   cur_env <- rlang::current_env()
-  req <- app_httr_get(self, private, url, fn_404 = function(req) {
+  req <- app_httr2_get(self, private, url, fn_404 = function(req) {
     app_abort(
       self,
       private,
@@ -217,7 +239,7 @@ app_expect_values <- function(
   })
 
   # Convert to text, then replace base64-encoded images with hashes.
-  content <- raw_to_utf8(req$content)
+  content <- raw_to_utf8(httr2::resp_body_raw(req))
   # original_content <- content
   content <- hash_snapshot_image_data(content, is_json_file = TRUE)
   # Adjust the text to _pretty_ print
@@ -238,13 +260,6 @@ app_expect_values <- function(
     withCallingHandlers(
       # swallow expectation
       {
-        # nolint
-        # `NAME.json` -> `NAME_.png`; `NAME_.new.png`
-        png_path <-
-          fs::path_ext_set(
-            paste0(fs::path_ext_remove(json_path), "_"),
-            "png"
-          )
         # Take screenshot using snapshot expectation.
         # Skip the variant check in `$expect_snapshot()`
         # Leverage testthat snapshot logic, but muffle any expectation output
@@ -258,8 +273,8 @@ app_expect_values <- function(
       # Muffle any expectation (good or bad) thrown by testthat
       expectation = function(ex) {
         # Continue, skipping the signaling of the condition
-        # https://github.com/r-lib/testthat/blob/38c087d3bb5ec3c098c181f1e58a55c687268fba/R/expectation.R#L32-L34
-        invokeRestart("continue_test")
+        # https://github.com/r-lib/testthat/pull/2271/files#diff-eeb22563925ae9725656cfbfc44bd5001428734041747d5d90d364464e8e651cR107
+        invokeRestart("muffle_expectation")
       }
     )
   }
@@ -304,8 +319,13 @@ app_get_shiny_test_url <- function(
   }
 
   q_string <- function(group, value) {
-    if (isTRUE(value)) paste0(group, "=1") else if (is.character(value))
-      paste0(group, "=", paste(value, collapse = ",")) else ""
+    if (isTRUE(value)) {
+      paste0(group, "=1")
+    } else if (is.character(value)) {
+      paste0(group, "=", paste(value, collapse = ","))
+    } else {
+      ""
+    }
   }
   paste(
     private$shiny_test_url,

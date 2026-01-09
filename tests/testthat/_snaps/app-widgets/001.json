@@ -1,0 +1,52 @@
+{
+  "input": {
+    "action": 0,
+    "bsSwitch": false,
+    "checkGroup": "1",
+    "checkbox": false,
+    "checkboxGroupButtons": null,
+    "date": "2014-01-01",
+    "dates": [
+      "2014-01-01",
+      "2014-02-20"
+    ],
+    "file": null,
+    "knob": 0,
+    "matSwitch": false,
+    "num": 1,
+    "picker": null,
+    "prettyCheckbox": false,
+    "radio": "1",
+    "search": "",
+    "search_reset": 0,
+    "search_search": 0,
+    "search_text": "",
+    "select": "1",
+    "slider1": 50,
+    "slider2": [
+      25,
+      75
+    ],
+    "sliderText": "Strongly disagree",
+    "tabset": "shiny",
+    "text": "Enter text..."
+  },
+  "output": {
+    "action_out": "[1] 0\nattr(,\"class\")\n[1] \"shinyActionButtonValue\" \"integer\"               ",
+    "checkGroup_out": "[1] \"1\"",
+    "checkbox_out": "[1] FALSE",
+    "date_out": "[1] \"2014-01-01\"",
+    "dates_out": "[1] \"2014-01-01\" \"2014-02-20\"",
+    "file_out": "NULL",
+    "num_out": "[1] 1",
+    "radio_out": "[1] \"1\"",
+    "select_out": "[1] \"1\"",
+    "slider1_out": "[1] 50",
+    "slider2_out": "[1] 25 75",
+    "tabset_out": "[1] \"shiny\"",
+    "text_out": "[1] \"Enter text...\""
+  },
+  "export": {
+
+  }
+}

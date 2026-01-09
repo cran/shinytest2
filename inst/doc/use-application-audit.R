@@ -3,9 +3,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-library(shinytest2)
-library(shiny)
-library(deSolve)
+# library(shinytest2)
+# library(shiny)
 
 ## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
 knitr::include_graphics("images/shinytest2-loadtest.png")

@@ -388,10 +388,11 @@ when it’s being tested. To detect when it’s being tested, you can use
 <h2>How can I get the objects from files in my the R folder into the
 testing environment?</h2>
 <p>Loading the support environment for a Shiny application requires a
-call to <code>shinytest2::load_app_env()</code> in
-<code>./tests/testthat/setup-shinytest2.R</code>. This method will load
-the <code>global.R</code> and all R files into the testing environment,
-similar to testing package R code.</p>
+call to <code>shinytest2::local_app_support()</code> or
+<code>shinytest2::with_app_support()</code>. Add these calls to your
+unit tests to load the support into the appropriate environments. These
+methods will load the <code>global.R</code> and all R files into the
+testing environment, similar to testing package R code.</p>
 <p>This is not automatically performed as it may be costly to load the
 support environment.</p>
 </div>

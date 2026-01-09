@@ -115,6 +115,10 @@ app_expect_screenshot <- function(
 
   filename <- app_next_temp_snapshot_path(self, private, name, "png")
 
+  # Announce snapshot file before touching before any other expressions can fail
+  testthat::local_edition(3)
+  testthat::announce_snapshot_file(filename)
+
   # Take screenshot
   self$get_screenshot(
     file = filename,
