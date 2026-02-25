@@ -48,6 +48,7 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -539,6 +540,131 @@ shiny application object directly. Unfortunately, the test file will not
 be able to be saved. Instead, the test commands can be copied into a
 test script manually.</p>
 </div>
+<div id="understanding-app-support-files-local_app_support-and-friends" class="section level2">
+<h2>Understanding app support files: <code>local_app_support()</code>
+and friends</h2>
+<p>When testing Shiny applications within R packages, you may need
+access to helper functions, modules, or other objects defined in your
+app’s <code>./R</code> directory. The <code>local_app_support()</code>,
+<code>with_app_support()</code>, and <code>load_app_support()</code>
+functions help manage this.</p>
+<div id="when-do-you-need-these-functions" class="section level3">
+<h3>When do you need these functions?</h3>
+<p><strong>You do NOT need them if:</strong></p>
+<ul>
+<li>Your app is defined inline (as a Shiny app object passed directly to
+<code>AppDriver$new()</code>)</li>
+<li>All needed functions are already available from your package via
+<code>library(yourpackage)</code> or in the test file itself</li>
+</ul>
+<p><strong>Example - inline app (no <code>local_app_support()</code>
+needed):</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># File: tests/testthat/test-inline-app.R</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;inline app with package modules works&quot;</span>, {</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="fu">skip_on_cran</span>()</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  </span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="co"># Your module functions are already available from your package</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  test_app <span class="ot">&lt;-</span> <span class="fu">shinyApp</span>(</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>    <span class="at">ui =</span> <span class="fu">fluidPage</span>(<span class="fu">mod_test_ui</span>(<span class="st">&quot;test&quot;</span>)),</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>    <span class="at">server =</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>      <span class="fu">mod_test_server</span>(<span class="at">id =</span> <span class="st">&quot;test&quot;</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>    }</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>  )</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>  </span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(test_app)</span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>})</span></code></pre></div>
+<p><strong>You DO need them if:</strong></p>
+<ul>
+<li>Your app is stored in a directory (e.g.,
+<code>inst/myapps/app1/</code>)</li>
+<li>The app has supporting files in its own <code>./R</code>
+subfolder</li>
+<li>You need to test those supporting functions or access them in your
+tests</li>
+</ul>
+</div>
+<div id="which-function-should-you-use" class="section level3">
+<h3>Which function should you use?</h3>
+<p><strong><code>local_app_support(app_dir)</code></strong> -
+Recommended for package testing</p>
+<ul>
+<li>Automatically attaches the app’s support environment for the current
+test</li>
+<li>Automatically cleans up when the test completes</li>
+<li>Prevents conflicts between different app tests</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># File structure:</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#   ./inst/myapps/app1/app.R</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#   ./inst/myapps/app1/R/modules.R  (contains helper functions)</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#   ./tests/testthat/test-app1.R</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;app1 works with its helpers&quot;</span>, {</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="fu">skip_on_cran</span>()</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>  </span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>  app_dir <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;myapps/app1&quot;</span>, <span class="at">package =</span> <span class="st">&quot;mypkg&quot;</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>  </span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  <span class="co"># Load app1&#39;s support files (modules.R, etc.)</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>  <span class="fu">local_app_support</span>(app_dir)</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>  </span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>  <span class="co"># Now helper functions from app1/R/ are available</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>  <span class="fu">expect_true</span>(<span class="fu">exists</span>(<span class="st">&quot;my_module_ui&quot;</span>))</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>  </span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>  <span class="co"># Test the app</span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(app_dir)</span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>})</span></code></pre></div>
+<p><strong><code>with_app_support(app_dir, { ... })</code></strong> -
+For explicit scoping</p>
+<ul>
+<li>Support environment is only available within the expression
+block</li>
+<li>Cleaned up immediately after the expression completes</li>
+<li>Useful when you want very clear boundaries</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;app support is scoped correctly&quot;</span>, {</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  app_dir <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;myapps/app1&quot;</span>, <span class="at">package =</span> <span class="st">&quot;mypkg&quot;</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  </span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="fu">expect_false</span>(<span class="fu">exists</span>(<span class="st">&quot;helper_value&quot;</span>))</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  </span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  <span class="fu">with_app_support</span>(app_dir, {</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>    <span class="co"># helper_value is available here</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>    <span class="fu">expect_true</span>(<span class="fu">exists</span>(<span class="st">&quot;helper_value&quot;</span>))</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>    <span class="fu">expect_equal</span>(helper_value, <span class="dv">42</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>  })</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>  </span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>  <span class="co"># helper_value is gone after the block</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  <span class="fu">expect_false</span>(<span class="fu">exists</span>(<span class="st">&quot;helper_value&quot;</span>))</span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>})</span></code></pre></div>
+<p><strong><code>load_app_support(app_dir)</code></strong> - For
+standalone apps only</p>
+<ul>
+<li>Permanently loads support files into the testing environment</li>
+<li>No automatic cleanup</li>
+<li>Best used in <code>setup-shinytest2.R</code> for non-package Shiny
+applications</li>
+<li><strong>Not recommended for package testing</strong> as it can cause
+conflicts</li>
+</ul>
+</div>
+<div id="benefits-of-using-these-functions" class="section level3">
+<h3>Benefits of using these functions</h3>
+<ol style="list-style-type: decimal">
+<li><strong>Isolation</strong>: Tests for different apps don’t interfere
+with each other</li>
+<li><strong>Access to internals</strong>: Test helper functions and
+modules without manual sourcing</li>
+<li><strong>Clean testing</strong>: Automatic cleanup prevents pollution
+of test environment</li>
+<li><strong>Package compatibility</strong>: Works seamlessly with
+package development workflow</li>
+</ol>
+</div>
+</div>
 <div id="other-setup-steps" class="section level2">
 <h2>Other setup steps</h2>
 <p>There are a few steps that are needed for both types of tests.</p>
@@ -616,14 +742,14 @@ directory).</p>
     └── testthat
         └── test-other-things.R</code></pre>
 <p>Previous <code>test-sample_app.R</code>:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a></span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;sample_app works&quot;</span>, {</span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">name =</span> <span class="st">&quot;sample_app&quot;</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a></span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
-<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  <span class="fu">expect_equal</span>(app<span class="sc">$</span><span class="fu">get_value</span>(<span class="st">&quot;input$n&quot;</span>), helper_value)</span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>})</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;sample_app works&quot;</span>, {</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">name =</span> <span class="st">&quot;sample_app&quot;</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>  <span class="fu">expect_equal</span>(app<span class="sc">$</span><span class="fu">get_value</span>(<span class="st">&quot;input$n&quot;</span>), helper_value)</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>})</span></code></pre></div>
 <p>It is now recommended to store all tests in
 <code>tests/testthat/</code> and have the application defined elsewhere.
 This keeps the application directory clean and leverages existing
@@ -644,16 +770,16 @@ package testing infrastructure for a unified testing experience.</p>
         ├── test-other-things.R
         └── test-sample_app.R</code></pre>
 <p>New <code>test-sample_app.R</code>:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;sample_app works&quot;</span>, {</span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  appdir <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="at">package =</span> <span class="st">&quot;exPackage&quot;</span>, <span class="st">&quot;sample_app&quot;</span>)</span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="fu">local_app_support</span>(appdir)</span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(appdir, <span class="at">name =</span> <span class="st">&quot;sample_app&quot;</span>)</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a></span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>  <span class="fu">expect_equal</span>(app<span class="sc">$</span><span class="fu">get_value</span>(<span class="st">&quot;input$n&quot;</span>), helper_value)</span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>})</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">&quot;sample_app works&quot;</span>, {</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>  appdir <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="at">package =</span> <span class="st">&quot;exPackage&quot;</span>, <span class="st">&quot;sample_app&quot;</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>  <span class="fu">local_app_support</span>(appdir)</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(appdir, <span class="at">name =</span> <span class="st">&quot;sample_app&quot;</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>  <span class="fu">expect_equal</span>(app<span class="sc">$</span><span class="fu">get_value</span>(<span class="st">&quot;input$n&quot;</span>), helper_value)</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>})</span></code></pre></div>
 <p>Since we have moved the tests out of the application directory, we
 need to ensure that any supporting files (like snapshots) are still
 accessible. When testing <strong>only</strong> an application, the

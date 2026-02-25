@@ -74,7 +74,7 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 #   }
 # )
 
-## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center', fig.alt="Screenshot of a Shiny app showing the shinytest2 test recorder with exported values visible in the app's code, demonstrating how exportTestValues() is used to expose internal reactive values for testing"----
 knitr::include_graphics("images/screenshot-exports-app.png")
 
 ## -----------------------------------------------------------------------------
@@ -90,7 +90,7 @@ knitr::include_graphics("images/screenshot-exports-app.png")
 ## -----------------------------------------------------------------------------
 # Sys.sleep(0.5)
 
-## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center', fig.alt="Screenshot of the test recorder interface showing the random seed configuration field where users can set a seed value to ensure reproducible test results for applications using random number generation"----
 knitr::include_graphics("images/screenshot-recorder-random-seed.png")
 
 ## -----------------------------------------------------------------------------

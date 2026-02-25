@@ -1,10 +1,11 @@
 Package: shinytest2
 Title: Testing for Shiny Applications
-Version: 0.5.0
+Version: 0.5.1
 Authors@R: c(
     person("Barret", "Schloerke", , "barret@posit.co", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0001-9986-114X")),
-    person(, "Posit Software, PBC", role = c("cph", "fnd")),
+    person(, "Posit Software, PBC", role = c("cph", "fnd"),
+           comment = c(ROR = "03wc8by49")),
     person("Winston", "Chang", , "winston@posit.co", role = "ctb",
            comment = "Original author to rstudio/shinytest"),
     person("Gábor", "Csárdi", , "gabor@posit.co", role = "ctb",
@@ -55,14 +56,14 @@ Collate: 'R6-helper.R' 'app-driver-chromote.R' 'app-driver-dir.R'
         'save-app.R' 'shiny-browser.R' 'shinytest2-logs.R'
         'shinytest2-package.R' 'test-app.R' 'use.R'
 NeedsCompilation: yes
-Packaged: 2026-01-09 21:29:33 UTC; barret
+Packaged: 2026-02-25 19:22:18 UTC; elizabethnelson
 Author: Barret Schloerke [cre, aut] (ORCID:
     <https://orcid.org/0000-0001-9986-114X>),
-  Posit Software, PBC [cph, fnd],
+  Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>),
   Winston Chang [ctb] (Original author to rstudio/shinytest),
   Gábor Csárdi [ctb] (Original author to rstudio/shinytest),
   Hadley Wickham [ctb] (Original author to rstudio/shinytest),
   Mango Solutions [cph, ccp] (Original author to rstudio/shinytest)
 Maintainer: Barret Schloerke <barret@posit.co>
 Repository: CRAN
-Date/Publication: 2026-01-09 21:40:02 UTC
+Date/Publication: 2026-02-25 19:40:02 UTC

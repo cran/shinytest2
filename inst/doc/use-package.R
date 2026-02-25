@@ -83,6 +83,63 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 # })
 
 ## -----------------------------------------------------------------------------
+# # File: tests/testthat/test-inline-app.R
+# library(shinytest2)
+# 
+# test_that("inline app with package modules works", {
+#   skip_on_cran()
+# 
+#   # Your module functions are already available from your package
+#   test_app <- shinyApp(
+#     ui = fluidPage(mod_test_ui("test")),
+#     server = function(input, output, session) {
+#       mod_test_server(id = "test")
+#     }
+#   )
+# 
+#   app <- AppDriver$new(test_app)
+#   app$expect_values()
+# })
+
+## -----------------------------------------------------------------------------
+# # File structure:
+# #   ./inst/myapps/app1/app.R
+# #   ./inst/myapps/app1/R/modules.R  (contains helper functions)
+# #   ./tests/testthat/test-app1.R
+# 
+# test_that("app1 works with its helpers", {
+#   skip_on_cran()
+# 
+#   app_dir <- system.file("myapps/app1", package = "mypkg")
+# 
+#   # Load app1's support files (modules.R, etc.)
+#   local_app_support(app_dir)
+# 
+#   # Now helper functions from app1/R/ are available
+#   expect_true(exists("my_module_ui"))
+# 
+#   # Test the app
+#   app <- AppDriver$new(app_dir)
+#   app$expect_values()
+# })
+
+## -----------------------------------------------------------------------------
+# test_that("app support is scoped correctly", {
+#   app_dir <- system.file("myapps/app1", package = "mypkg")
+# 
+#   expect_false(exists("helper_value"))
+# 
+#   with_app_support(app_dir, {
+#     # helper_value is available here
+#     expect_true(exists("helper_value"))
+#     expect_equal(helper_value, 42)
+#   })
+# 
+#   # helper_value is gone after the block
+#   expect_false(exists("helper_value"))
+# })
+
+## -----------------------------------------------------------------------------
 # library(shinytest2)
 # 
 # test_that("sample_app works", {

@@ -23,10 +23,10 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 # library(shinytest2)
 # record_test("simple-app/")
 
-## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center', fig.alt="Screenshot of the shinytest2 test recorder interface showing the target app on the left side with a 'What is your name?' input field and the recorder app sidebar on the right side with recording controls"----
 knitr::include_graphics("images/record-simple-app.png")
 
-## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center', fig.alt="Screenshot of the test recorder interface showing the app and recorder sidebar with recorded test code including expect_values() assertion"----
 knitr::include_graphics("images/record-simple-app-2.png")
 
 ## -----------------------------------------------------------------------------
@@ -43,10 +43,10 @@ knitr::include_graphics("images/record-simple-app-2.png")
 ## -----------------------------------------------------------------------------
 # test_app("simple-app", filter = "shinytest2")
 
-## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center', fig.alt="Screenshot of the testthat snapshot review interface (diffviewer) showing side-by-side comparison of expected and actual test results"----
 knitr::include_graphics("images/diffviewer-1.png")
 
-## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center'--------------
+## ----echo=FALSE, eval=TRUE, out.width='100%', fig.align='center', fig.alt="Screenshot of the test recorder interface showing a dialog for entering a custom name for the test being recorded"----
 knitr::include_graphics("images/record-name.png")
 
 ## -----------------------------------------------------------------------------

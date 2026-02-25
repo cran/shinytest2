@@ -1,3 +1,23 @@
+# shinytest2 0.5.1
+
+## New features
+
+* `local_app_support()`, `with_app_support()`, and `load_app_support()`
+  documentation has been expanded to clarify when each function is needed. The
+  use-package vignette now includes detailed examples and a decision tree to
+  help users choose the right approach (#438).
+
+## Bug fixes and minor improvements
+
+* All vignette images now include alt text for improved accessibility (#435).
+
+* `record_test()` no longer prints a debug message when recording tests in a
+  package directory (#437).
+
+* `record_test(app=)` now properly handles function apps. Previously, passing
+  a function would error with "object of type 'closure' is not subsettable"
+  when determining the test file name (#439).
+
 # shinytest2 0.5.0
 
 ## Lifecycle changes
