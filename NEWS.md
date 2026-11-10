@@ -1,3 +1,43 @@
+# shinytest2 0.6.0
+
+## New features
+
+* New `AppDriver$get_process()` returns the background R process that runs the
+  app. Use `app$get_process()$is_alive()` to check if the app is still running,
+  and `app$get_process()$wait()` to wait for an app that calls
+  `shiny::stopApp()` to exit before calling `app$stop()` (#319, #320, #457).
+
+## Bug fixes and minor improvements
+
+* shinytest2 now requires R 4.1 or later.
+
+* shinytest2 now requires httr2 1.0.0 or later. Older versions of httr2 could
+  return a `NULL` hostname when parsing some app URLs.
+
+* `AppDriver$expect_download()` and `AppDriver$get_download()` now build the
+  download URL correctly when the app URL contains query parameters, instead
+  of downloading the app's HTML page (#357). They also wait for the download
+  element's `href` to be set before fetching, so a download link inside a modal
+  or one that Shiny has not yet rendered now returns the intended file (#445).
+
+* `AppDriver$new()` now waits for the app's port to accept a connection before
+  opening the app in the browser. This prevents intermittent "Shiny app did not
+  become stable" errors on slow machines, where Shiny prints "Listening on ..."
+  before the port is ready (@nbenn, #448). `AppDriver$new()` also runs
+  `pkgload::load_all()` only on packages in development, so apps tested via
+  `testthat::test_package()` now see the installed package's namespace
+  (@zsigmas, #451).
+
+* `record_test()` now treats only packages in development, not installed
+  packages, as the package under test. It also keeps a package's existing
+  `tests/testthat.R` runner when saving a recorded test (#462).
+
+* `vignette("use-package")` gains a section, "Apps that read from the global
+  environment", that shows how to supply test objects to an app that looks them
+  up in `.GlobalEnv` by passing a function to `AppDriver$new()`. A new FAQ entry
+  explains when an app directory's `.Rprofile` and `.Renviron` files are run
+  (#456).
+
 # shinytest2 0.5.1
 
 ## New features
@@ -9,14 +49,18 @@
 
 ## Bug fixes and minor improvements
 
-* All vignette images now include alt text for improved accessibility (#435).
+* All vignette images now include alt text for improved accessibility
+  (#435).
 
-* `record_test()` no longer prints a debug message when recording tests in a
-  package directory (#437).
+* `$get_download()` and `$expect_download()` now correctly construct the
+  download URL when the app URL contains query parameters. Previously,
+  query parameters were concatenated into the download path, causing an
+  HTML page to be downloaded instead of the expected file (#357).
 
-* `record_test(app=)` now properly handles function apps. Previously, passing
-  a function would error with "object of type 'closure' is not subsettable"
-  when determining the test file name (#439).
+* `record_test()` no longer prints a debug message when recording tests
+  in a package directory (#437). `record_test(app=)` now handles
+  function apps; previously, passing a function would error with
+  "object of type 'closure' is not subsettable" (#439).
 
 # shinytest2 0.5.0
 

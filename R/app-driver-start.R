@@ -210,9 +210,9 @@ app_start_shiny <- function(
     app_abort(
       self,
       private,
-      paste0(
-        "Failed to start shiny. Error:\n",
-        strwrap(readLines(p$get_error_file()))
+      c(
+        "Failed to start shiny. Error:",
+        cli_lines(strwrap(readLines(p$get_error_file())))
       )
     )
   }
@@ -226,17 +226,15 @@ app_start_shiny <- function(
 
     if (!p$is_alive()) {
       msg <- if (is.function(self$get_dir())) {
-        paste0(
-          "The Shiny app function has already terminated. Did you return a Shiny application object or run an App?\n"
-        )
+        "The Shiny app function has already terminated. Did you return a Shiny application object or run an App?"
       }
       app_abort(
         self,
         private,
-        paste0(
+        c(
           msg,
-          "Error starting shiny application:\n",
-          paste(err_lines, collapse = "\n")
+          "Error starting shiny application:",
+          cli_lines(err_lines)
         )
       )
     }
@@ -250,16 +248,14 @@ app_start_shiny <- function(
       app_abort(
         self,
         private,
-        sprintf(
+        c(
           paste(
-            "The Shiny app failed to start up within %s second%s.",
+            "The Shiny app failed to start up within {load_timeout / 1000} second{if (load_timeout == 1000) '' else 's'}.",
             "To increase the loading timeout, consult the documentation in `?AppDriver`",
             "for the `load_timeout` argument of `AppDriver$new()`.",
-            "The app printed the following lines to stderr during start up:\n%s"
+            "The app printed the following lines to stderr during start up:"
           ),
-          load_timeout / 1000,
-          if (load_timeout == 1000) "" else "s",
-          paste(err_lines, collapse = "\n")
+          cli_lines(err_lines)
         )
       )
     }
@@ -271,5 +267,45 @@ app_start_shiny <- function(
   url <- sub(".*(https?://.*)", "\\1", line)
   private$shiny_url$set(url)
 
+  # shiny prints the "Listening on ..." line above *before* it binds the
+  # listening socket (rstudio/shiny#4400), so on a slow or loaded host the port
+  # may not be accepting connections yet. Navigating then lands on the browser's
+  # error page, and the later recovery navigation (once the app binds) races
+  # initialization's readiness and idle checks into an opaque "did not become
+  # stable" abort (rstudio/shinytest2#448). Wait for the port to accept a
+  # connection before returning so the caller navigates against a bound socket.
+  app_wait_for_serving(url, timeout = load_timeout)
+
   invisible(self)
+}
+
+# Poll `url`'s port until it accepts a connection (or `timeout` ms elapse), so
+# the caller can navigate against a bound socket rather than the error page the
+# browser shows for a not-yet-bound port. Returns invisibly whether the port
+# came up. `pingr::is_up()` is the same reachability check `app_httr2_get()`
+# already uses.
+app_wait_for_serving <- function(url, timeout = 10000) {
+  pieces <- httr2::url_parse(url)
+  # Add in port information if it's missing, matching `app_httr2_get()`.
+  # https://github.com/rstudio/shinytest2/issues/158
+  if (is.null(pieces$port)) {
+    pieces$port <- switch(pieces$scheme, "http" = 80, "https" = 443)
+  }
+
+  deadline <- Sys.time() + timeout / 1000
+  repeat {
+    if (
+      isTRUE(pingr::is_up(
+        pieces$hostname,
+        pieces$port,
+        check_online = FALSE
+      ))
+    ) {
+      return(invisible(TRUE))
+    }
+    if (Sys.time() >= deadline) {
+      return(invisible(FALSE))
+    }
+    Sys.sleep(0.05)
+  }
 }

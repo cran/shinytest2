@@ -1,4 +1,4 @@
-## ----setup, include=FALSE-----------------------------------------------------
+## -----------------------------------------------------------------------------
 library(shiny)
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
@@ -32,13 +32,12 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ## -----------------------------------------------------------------------------
 # # File: tests/testthat/test-app-function.R
 # library(shinytest2)
-# run_mypkg_app <-
 # 
 # test_that("mypkg app initial values are consistent", {
 #   # Don't run these tests on the CRAN build servers
 #   skip_on_cran()
 # 
-#   app <- AppDriver$new(name = "mypkg-app", function() {
+#   app <- AppDriver$new(name = "mypkg-app", \() {
 #     library(mypkg)
 #     run_app()
 #   })
@@ -80,6 +79,69 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 #   app <- AppDriver$new(shiny_app, name = "hello")
 # 
 #   app$expect_values()
+# })
+
+## -----------------------------------------------------------------------------
+# # File: R/pick-data-app.R
+# 
+# pick_data_app <- function() {
+#   shinyApp(
+#     ui = fluidPage(
+#       selectInput("dataset", "Dataset", choices = NULL),
+#       tableOutput("table")
+#     ),
+#     server = function(input, output, session) {
+#       env <- globalenv()
+#       is_df <- function(name) is.data.frame(get(name, envir = env))
+#       updateSelectInput(session, "dataset", choices = Filter(is_df, ls(env)))
+# 
+#       output$table <- renderTable({
+#         req(input$dataset)
+#         head(get(input$dataset, envir = env))
+#       })
+#     }
+#   )
+# }
+
+## -----------------------------------------------------------------------------
+# # Does not work: `my_data` only exists in the testing R process
+# assign("my_data", datasets::mtcars, envir = globalenv())
+# app <- AppDriver$new(pick_data_app())
+
+## -----------------------------------------------------------------------------
+# # File: tests/testthat/test-pick-data-app.R
+# 
+# test_that("pick_data_app shows data from the global environment", {
+#   # Don't run these tests on the CRAN build servers
+#   skip_on_cran()
+# 
+#   my_data <- datasets::mtcars
+# 
+#   app <- AppDriver$new(name = "pick-data", \() {
+#     # Runs in the background R process
+#     assign("my_data", my_data, envir = globalenv())
+#     library(mypkg)
+#     pick_data_app()
+#   })
+# 
+#   # `my_data` is the only data frame, so it is already selected
+#   app$expect_values(output = "table")
+# })
+
+## -----------------------------------------------------------------------------
+# # File: tests/testthat/test-pick-data-app.R
+# 
+# test_that("pick_data_app shows data from a supplied environment", {
+#   skip_on_cran()
+# 
+#   my_data <- datasets::mtcars
+# 
+#   app <- AppDriver$new(name = "pick-data-env", \() {
+#     library(mypkg)
+#     pick_data_app(env = list2env(list(my_data = my_data)))
+#   })
+# 
+#   app$expect_values(output = "table")
 # })
 
 ## -----------------------------------------------------------------------------

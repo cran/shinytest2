@@ -9,7 +9,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
+```{r}
+#| label: setup
+#| include: false
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 
@@ -57,6 +59,20 @@ This is not automatically performed as it may be costly to load the support envi
 For a detailed explanation of when and how to use these functions, see the [Understanding app support files](use-package.html#understanding-app-support-files-local_app_support-and-friends) section in the "Using shinytest2 with R packages" vignette.
 
 
+## My app reads objects from the global environment. Why can't it find my test objects?
+
+The app runs in a background R process with its own global environment, so objects created in your test are not there. Pass a function to `AppDriver$new()` that copies the objects into the background process's global environment before starting the app. See [Apps that read from the global environment](use-package.html#apps-that-read-from-the-global-environment) in the "Using shinytest2 with R packages" vignette.
+
+
+## Does `{shinytest2}` run my app's `.Rprofile` or `.Renviron`?
+
+Yes. If you supply a directory to `AppDriver$new(myappdir)`, `{shinytest2}` starts the background R process from the supplied directory.  So an `.Rprofile` or `.Renviron` file in that directory is run before the app starts. This can be used to set options, such as `options(shiny.testmode = TRUE)`, or to create objects the app expects to find in the global environment.
+
+Your user-level `~/.Rprofile` is never run in the background R process.
+
+If you pass a function or an app object to `AppDriver$new()`, the background R process is not started from the app directory, so the app's `.Rprofile` and `.Renviron` are not run. To supply objects to these apps, see [Apps that read from the global environment](use-package.html#apps-that-read-from-the-global-environment).
+
+
 ## Can I modify the `input` and `output` values that are recorded in snapshots?
 
 For some kinds of outputs, it is problematic to record the raw value directly in a JSON snapshot. The output might be very large (e.g., image data or a large table), or it may contain randomly-generated values for which the specific value is unimportant for testing (such as randomly-generated DOM element IDs).
@@ -79,7 +95,7 @@ shinyApp(
       renderText({
         paste("This is a random number:", rnorm(1))
       }),
-      function(value) {
+      \(value) {
         sub("[0-9.]+$", "<a random number>", value)
       }
     )
@@ -105,6 +121,57 @@ Input values can face the same issues, and they can also be modified with `shiny
 For code completeness, you should call `app$stop()` at the end of your tests to shut down the background Shiny process and current Chromote Session.
 
 If your R session is starting to feel more sluggish, you may want to call `app$stop()` manually. Or if you are programmatically creating many instances of `AppDriver`, you may want to call `app$stop()` when the specific test is complete via `withr::defer(app$stop())` right after initialization.
+
+## How can I tell if my app is still running?
+
+Use `app$get_process()$is_alive()`. `app$get_process()` returns the [`callr`](https://callr.r-lib.org/reference/r_bg.html) process that runs the app in the background. `$is_alive()` returns `FALSE` once the app has stopped, such as after the app calls `shiny::stopApp()` or after `app$stop()`.
+
+```{r}
+test_that("Done button stops the app", {
+  app <- AppDriver$new(test_path("apps/done"))
+  expect_true(app$get_process()$is_alive())
+
+  app$click("done", wait_ = FALSE)
+  # Wait up to 5 seconds for the background process to end
+  app$get_process()$wait(5000)
+  expect_false(app$get_process()$is_alive())
+})
+```
+
+If `AppDriver` was given a URL, `{shinytest2}` did not start the app, so `app$get_process()` returns `NULL`.
+
+## How can I test an app that stops itself?
+
+When an app calls `shiny::stopApp()`, the background R process ends on its own. Use `app$get_process()` to get that [`callr`](https://callr.r-lib.org/reference/r_bg.html) process. `$is_alive()` tells you if the app is still running, and `$wait()` pauses until the process ends.
+
+`app$stop()` returns the process result if the process has already ended. If it is still running, `app$stop()` kills it and returns `NULL`. So wait for the process to end before calling `app$stop()`.
+
+The result of an app object is the value given to `stopApp()`. The result of a function app is the value the function returns, so it can return objects the app left in the global environment:
+
+```{r}
+test_that("Done button saves `foo`", {
+  done_app <- shinyApp(
+    fluidPage(actionButton("done", "Done")),
+    function(input, output, session) {
+      observeEvent(input$done, {
+        assign("foo", "bar", envir = globalenv())
+        stopApp()
+      })
+    }
+  )
+  app <- AppDriver$new(\() {
+    shiny::runApp(done_app) # Returns once the app calls `stopApp()`
+    mget("foo", envir = globalenv())
+  })
+  app$click("done", wait_ = FALSE)
+
+  # Wait up to 5 seconds for the background process to end
+  app$get_process()$wait(5000)
+  expect_false(app$get_process()$is_alive())
+
+  expect_equal(app$stop(), list(foo = "bar"))
+})
+```
 
 ## How can I open the test to see if bookmarks are working?
 

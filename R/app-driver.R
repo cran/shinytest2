@@ -1529,7 +1529,7 @@ AppDriver <- R6Class(
     #' #> Warning:
     #' #> ! Shiny inputs should have unique HTML id values.
     #' #> i The following HTML id values are not unique:
-    #' #> • text
+    #' #> * text
     #' app$stop()
     #'
     #' # Manually assert that all names are unique
@@ -1538,7 +1538,7 @@ AppDriver <- R6Class(
     #' #> Error: `app_check_unique_names(self, private)` threw an unexpected warning.
     #' #> Message: ! Shiny inputs should have unique HTML id values.
     #' #> i The following HTML id values are not unique:
-    #' #>   • text
+    #' #>   * text
     #' #> Class:   rlang_warning/warning/condition
     #' app$stop()
     #' }
@@ -1662,6 +1662,28 @@ AppDriver <- R6Class(
       app_get_chromote_session(self, private)
     },
     #' @description
+    #' Get the Shiny process
+    #'
+    #' Get the [`callr::r_bg()`] process that runs the Shiny app in the
+    #' background. Use it to check if the app is still running, or to wait for
+    #' an app that calls [shiny::stopApp()] to exit before calling `$stop()`.
+    #' @return [`callr::r_process`] R6 object, or `NULL` if the app is not
+    #'   hosted locally (e.g. `app_dir` is a URL)
+    #' @examples
+    #' \dontrun{
+    #' app_path <- system.file("examples/01_hello", package = "shiny")
+    #' app <- AppDriver$new(app_path)
+    #'
+    #' app$get_process()$is_alive()
+    #' #> [1] TRUE
+    #' app$stop()
+    #' app$get_process()$is_alive()
+    #' #> [1] FALSE
+    #' }
+    get_process = function() {
+      app_get_process(self, private)
+    },
+    #' @description
     #' Get the variant
     #'
     #' Get the `variant` supplied during initialization
@@ -1695,13 +1717,13 @@ AppDriver <- R6Class(
     #'   * `"shinytest2"`: Occurs when `$log_message()` is called
     #'   * `"shiny"`: `stdin` and `stdout` messages from the Shiny server. Note `message()` output is sent to `stdout`.
     #'   * `"chromote"`: Captured by the \pkg{chromote} event handlers. See
-    #'      [console API](https://chromedevtools.github.io/devtools-protocol/1-3/Runtime/#event-consoleAPICalled),
-    #'      [exception thrown](https://chromedevtools.github.io/devtools-protocol/1-3/Runtime/#event-exceptionThrown),
-    #'      [websocket sent](https://chromedevtools.github.io/devtools-protocol/1-3/Network/#event-webSocketFrameSent), and
-    #'      [websocket received](https://chromedevtools.github.io/devtools-protocol/1-3/Network/#event-webSocketFrameReceived)
+    #'      [console API](https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#event-consoleAPICalled),
+    #'      [exception thrown](https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#event-exceptionThrown),
+    #'      [websocket sent](https://chromedevtools.github.io/devtools-protocol/tot/Network/#event-webSocketFrameSent), and
+    #'      [websocket received](https://chromedevtools.github.io/devtools-protocol/tot/Network/#event-webSocketFrameReceived)
     #'      for more details
     #' * `level`: For a given location, there are different types of log levels.
-    #'   * `"shinytest2"`: `"log"`; Only log messages are captured.
+    #'   * `"shinytest2"`: `"info"`; Only log messages are captured.
     #'   * `"shiny"`: `"stdout"` or `"stderr"`; Note, `message()` output is sent
     #'     to `stderr`.
     #'   * `"chromote"`: Correspond to any level of a JavaScript
@@ -1776,31 +1798,31 @@ AppDriver <- R6Class(
     #' #> \{shiny\}      R  stderr    ----------- Running application in test mode.
     #' #> \{shiny\}      R  stderr    -----------
     #' #> \{shiny\}      R  stderr    ----------- Listening on http://127.0.0.1:4560
-    #' #> \{shiny\}      R  stderr    ----------- SEND \{"config":\{"workerId":"","sessionId"|truncated
-    #' #> \{shiny\}      R  stderr    ----------- RECV \{"method":"init","data":\{"bins":30,|truncated
-    #' #> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"config":\{"workerId":"","sessionId"\}\}|truncated
+    #' #> \{shiny\}      R  stderr    ----------- RECV \{"method":"init","data":\{"bins":30,\}\}|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":\}\}\}|truncated
     #' #> \{shiny\}      R  stderr    ----------- SEND \{"busy":"busy"\}
-    #' #> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":|truncated
-    #' #> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
-    #' #> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"custom":\{"showcase-src":\{"srcref":\}\}\}|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",\}\}|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"recalculating":\{"name":"distPlot",\}\}|truncated
     #' #> \{shiny\}      R  stderr    ----------- SEND \{"busy":"idle"\}
-    #' #> \{shiny\}      R  stderr    ----------- SEND \{"errors":\{\},"values":\{"distPlot":|truncated
+    #' #> \{shiny\}      R  stderr    ----------- SEND \{"errors":\{\},"values":\{"distPlot":\}\}|truncated
     #'
     #' # The log that is returned is a `data.frame()`.
     #' log <- app2$get_logs()
     #' tibble::glimpse(log)
     #' #> Rows: 43
     #' #> Columns: 5
-    #' #> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-    #' #> $ timestamp <dttm> 2022-09-19 10:01:57, 2022-09-19 10:01:57, 2022-09-19 10:01:58, 2022…
-    #' #> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shinytest2"…
-    #' #> $ level     <chr> "info", "info", "info", "info", "info", "info", "info", "info", "inf…
-    #' #> $ message   <chr> "Start AppDriver initialization", "Starting Shiny app", "Creating ne…
-    #' #> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-    #' #> $ timestamp <dttm> 2022-03-16 11:09:57, 2022-03-16 11:09:57, 2022-03-16 11:09:…
-    #' #> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shi…
-    #' #> $ level     <chr> "info", "info", "info", "info", "info", "info", "info", "inf…
-    #' #> $ message   <chr> "Start AppDriver initialization", "Starting Shiny app", "Cre…
+    #' #> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+    #' #> $ timestamp <dttm> 2022-09-19 10:01:57, 2022-09-19 10:01:57, 2022-09-19 10:01:58, 2022...
+    #' #> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shinytest2"...
+    #' #> $ level     <chr> "info", "info", "info", "info", "info", "info", "info", "info", "inf...
+    #' #> $ message   <chr> "Start AppDriver initialization", "Starting Shiny app", "Creating ne...
+    #' #> $ workerid  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+    #' #> $ timestamp <dttm> 2022-03-16 11:09:57, 2022-03-16 11:09:57, 2022-03-16 11:09:...
+    #' #> $ location  <chr> "shinytest2", "shinytest2", "shinytest2", "shinytest2", "shi...
+    #' #> $ level     <chr> "info", "info", "info", "info", "info", "info", "info", "inf...
+    #' #> $ message   <chr> "Start AppDriver initialization", "Starting Shiny app", "Cre...
     #'
     #' # It may be filtered to find desired logs
     #' subset(log, level == "websocket")

@@ -1,4 +1,4 @@
-## ----setup, include=FALSE-----------------------------------------------------
+## -----------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
 ## -----------------------------------------------------------------------------
@@ -16,12 +16,47 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 #       renderText({
 #         paste("This is a random number:", rnorm(1))
 #       }),
-#       function(value) {
+#       \(value) {
 #         sub("[0-9.]+$", "<a random number>", value)
 #       }
 #     )
 #   }
 # )
+
+## -----------------------------------------------------------------------------
+# test_that("Done button stops the app", {
+#   app <- AppDriver$new(test_path("apps/done"))
+#   expect_true(app$get_process()$is_alive())
+# 
+#   app$click("done", wait_ = FALSE)
+#   # Wait up to 5 seconds for the background process to end
+#   app$get_process()$wait(5000)
+#   expect_false(app$get_process()$is_alive())
+# })
+
+## -----------------------------------------------------------------------------
+# test_that("Done button saves `foo`", {
+#   done_app <- shinyApp(
+#     fluidPage(actionButton("done", "Done")),
+#     function(input, output, session) {
+#       observeEvent(input$done, {
+#         assign("foo", "bar", envir = globalenv())
+#         stopApp()
+#       })
+#     }
+#   )
+#   app <- AppDriver$new(\() {
+#     shiny::runApp(done_app) # Returns once the app calls `stopApp()`
+#     mget("foo", envir = globalenv())
+#   })
+#   app$click("done", wait_ = FALSE)
+# 
+#   # Wait up to 5 seconds for the background process to end
+#   app$get_process()$wait(5000)
+#   expect_false(app$get_process()$is_alive())
+# 
+#   expect_equal(app$stop(), list(foo = "bar"))
+# })
 
 ## -----------------------------------------------------------------------------
 # test_that("Bookmark works", {

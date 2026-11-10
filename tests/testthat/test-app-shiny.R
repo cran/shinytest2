@@ -23,8 +23,11 @@ hello_app <- shinyApp(
 
 
 test_that("AppDriver can receive a shiny.obj object", {
-
-  app <- AppDriver$new(hello_app, name = "app-shiny_app", expect_values_screenshot_args = FALSE)
+  app <- AppDriver$new(
+    hello_app,
+    name = "app-shiny_app",
+    expect_values_screenshot_args = FALSE
+  )
 
   app$set_inputs(name = "Barret")
   app$click("greet")
@@ -33,10 +36,15 @@ test_that("AppDriver can receive a shiny.obj object", {
 })
 
 test_that("AppDriver can receive a shinyAppDir object", {
+  skip_on_os("windows")
 
   ex_app_dir <- shinyAppDir(system.file("examples/01_hello", package = "shiny"))
 
-  app <- AppDriver$new(ex_app_dir, name = "app-shiny_dir", expect_values_screenshot_args = FALSE)
+  app <- AppDriver$new(
+    ex_app_dir,
+    name = "app-shiny_dir",
+    expect_values_screenshot_args = FALSE
+  )
 
   app$set_inputs(bins = 20)
 
